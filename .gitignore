@@ -20,3 +20,4 @@ pycache/
 *$py.class
 *.pyo
 personal/
+data/
