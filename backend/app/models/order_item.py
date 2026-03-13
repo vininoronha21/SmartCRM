@@ -14,3 +14,4 @@ class OrderItem(Base):
   freight_value: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
   
   order: Mapped["Order"] = relationship(back_populates="items")
+  

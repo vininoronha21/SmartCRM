@@ -8,3 +8,4 @@ class Seller(Base):
   zip_code_prefix: Mapped[str] = mapped_column(nullable=True)
   city: Mapped[str] = mapped_column(nullable=True)
   state: Mapped[str] = mapped_column(nullable=True)
+  
