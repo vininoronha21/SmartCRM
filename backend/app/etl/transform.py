@@ -1,4 +1,3 @@
-
 # Script para transformar os dados (OBS: Este arquivo NÃO acessa o banco, só trabalha com dados em memória)
 # Objetivo: ler os CSVs brutos e devolver DataFrames limpos e tipados
 
@@ -45,3 +44,20 @@ def transform_products() -> pd.DataFrame:
   
   return df
 
+# Converte todas as colunas de data para datetime
+def transform_orders() -> pd.DataFrame:
+  df = _read_csv("orders_dataset.csv")
+  
+  date_cols = [
+      "order_purchase_timestamp",
+      "order_approved_at",
+      "order_delivered_carrier_date",
+      "order_delivered_customer_date",
+      "order_estimated_delivery_date",
+  ]
+
+  # errors="coerce". Se encontrar uma data inválida, converte para NaT
+  for col in date_cols:
+    df[col] = pd.to_datetime(df[col], errors='coerce')
+
+  return df
