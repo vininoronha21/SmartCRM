@@ -61,3 +61,53 @@ def transform_orders() -> pd.DataFrame:
     df[col] = pd.to_datetime(df[col], errors='coerce')
 
   return df
+
+# Converte shipping_limit_date para datetime
+def transform_order_items() -> pd.DataFrame:
+  df = _read_csv("order_items_dataset.csv")
+
+  df["shipping_limit_date"] = pd.to_datetime(df["shipping_limit_date"], errors='coerce')
+
+  return df
+
+# SEM transformações necessárias (dados já estão limpos e bem tipados)
+# Função mantida para consistência: o load.py chama transform para todos os datasets
+def transform_order_payments() -> pd.DataFrame:
+  df = _read_csv("order_payments_dataset.csv")
+
+  return df
+
+# Nulos em review_comment_title e _message são mantidos. Comentários são opcionais
+def transform_order_reviews() -> pd.DataFrame:
+  df = _read_csv("order_reviews_dataset.csv")
+
+  date_cols = [
+    "review_creation_date",
+    "review_answer_timestamp",
+  ]
+
+  for col in date_cols:
+    df[col] = pd.to_datetime(df[col], errors='coerce')
+
+  return df
+
+# Ponto de entrada para teste manual
+# Permite rodar: python/backend/app/etl/transform.py
+# e ver um resumo de cada DataFrame transformando antes de carregar no banco
+if __name__ == "__main__":
+  transforms = {
+      "sellers":        transform_sellers,
+      "customers":      transform_customers,
+      "products":       transform_products,
+      "orders":         transform_orders,
+      "order_items":    transform_order_items,
+      "order_payments": transform_order_payments,
+      "order_reviews":  transform_order_reviews,
+  }
+
+  for name, func in transforms.items():
+    df = func()
+    print(f"\n{'='*80}")
+    print(f"{name.upper()}: {df.shape[0]:,} linhas × {df.shape[1]} colunas")
+    print(f"Tipos: {df.dtypes.to_dict()}")
+    print(f"Nulos restantes: {df.isnull().sum().to_dict()}")
