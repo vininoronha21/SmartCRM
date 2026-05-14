@@ -21,3 +21,5 @@ pycache/
 *.pyo
 personal/
 data/
+.pytest_cache/
+
