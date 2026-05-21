@@ -1,8 +1,9 @@
 import sqlalchemy
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from sqlalchemy import func, select, cast, Numeric
+from app.models.order_payment import OrderPayment
 from app.database import get_db
 from app.database import get_db
 from app.models.order import Order
@@ -44,3 +45,19 @@ def get_conversion_rate(db: DbSession):
     rate = round((delivered / total) * 100, 2) if total > 0 else 0
 
     return {"total_orders": total, "delivered": delivered, "conversion_rate_pct": rate}
+
+
+@router.get("/revenue")
+def get_revenue(db: DbSession):
+    """
+    Retorna a receita total somando todos os pagamentos realizados.
+    Considera apenas pedidos delivered para refletir receita realizada.
+    """
+    result = db.execute(
+        select(func.sum(OrderPayment.payment_value).label("total_revenue"))
+        .join(Order, Order.order_id == OrderPayment.order_id)
+        .where(Order.status == "delivered")
+    ).scalar()
+
+    return {"total_revenue": round(result or 0, 2)}
+    
