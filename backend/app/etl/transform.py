@@ -16,19 +16,34 @@ def _read_csv(filename: str) -> pd.DataFrame:
 # Exemplo: 'Campinas' e 'campinas'
 def transform_sellers() -> pd.DataFrame:
   df = _read_csv("sellers_dataset.csv")
-  df["seller_city"] = df["seller_city"].str.lower().str.strip()
+
+  df = df.rename(columns={
+      "seller_zip_code_prefix": "zip_code_prefix",
+      "seller_city": "city",
+      "seller_state": "state",
+  })
+
+  df["city"] = df["city"].str.lower().str.strip()
+  df["state"] = df["state"].str.upper().str.strip()
+
   return df
 
 # Padroniza customer_city para minúsculo
 def transform_customers() -> pd.DataFrame:
   df = _read_csv("customers_dataset.csv")
-  df["customer_city"] = df["customer_city"].str.lower().str.strip()
+  
+  df = df.rename(columns={
+      "customer_zip_code_prefix": "zip_code_prefix",
+      "customer_city": "city",
+      "customer_state": "state",
+  })
+
+  df["city"] = df["city"].str.lower().str.strip()
   return df
 
 # Limpa e padroniza o dataset de products 
 def transform_products() -> pd.DataFrame:
   df = _read_csv("products_dataset.csv")
-  df = df.dropna(subset=["product_weight_g"])
   df["product_category_name"] = df["product_category_name"].fillna("unknown")
 
   # Int64 = inteiro que aceita nulos no pandas
@@ -48,12 +63,21 @@ def transform_products() -> pd.DataFrame:
 def transform_orders() -> pd.DataFrame:
   df = _read_csv("orders_dataset.csv")
   
+  df = df.rename(columns={
+      "order_status": "status",
+      "order_purchase_timestamp": "purchase_timestamp",
+      "order_approved_at": "approved_at",
+      "order_delivered_carrier_date": "delivered_carrier_date",
+      "order_delivered_customer_date": "delivered_customer_date",
+      "order_estimated_delivery_date": "estimated_delivery_date",
+  })
+
   date_cols = [
-      "order_purchase_timestamp",
-      "order_approved_at",
-      "order_delivered_carrier_date",
-      "order_delivered_customer_date",
-      "order_estimated_delivery_date",
+      "purchase_timestamp",
+      "approved_at",
+      "delivered_carrier_date",
+      "delivered_customer_date",
+      "estimated_delivery_date",
   ]
 
   # errors="coerce". Se encontrar uma data inválida, converte para NaT
@@ -62,11 +86,11 @@ def transform_orders() -> pd.DataFrame:
 
   return df
 
-# Converte shipping_limit_date para datetime
+# Retorna apenas as colunas mapeadas no banco de dados (remove shipping_limit_date)
 def transform_order_items() -> pd.DataFrame:
   df = _read_csv("order_items_dataset.csv")
 
-  df["shipping_limit_date"] = pd.to_datetime(df["shipping_limit_date"], errors='coerce')
+  df = df[["order_id", "order_item_id", "product_id", "seller_id", "price", "freight_value"]]
 
   return df
 
@@ -80,6 +104,8 @@ def transform_order_payments() -> pd.DataFrame:
 # Nulos em review_comment_title e _message são mantidos. Comentários são opcionais
 def transform_order_reviews() -> pd.DataFrame:
   df = _read_csv("order_reviews_dataset.csv")
+
+  df = df.drop_duplicates(subset=["review_id"])
 
   date_cols = [
     "review_creation_date",

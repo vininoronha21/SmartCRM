@@ -24,25 +24,64 @@ CHUNK_SIZE = 1000
 def _load_dataframe(df: pd.DataFrame, table_name: str) -> None:
     print(f"\nCarregando {table_name} ({len(df):,} linhas)")
     start = time.time()
-    
-    df.to_sql(
-        name=table_name,
-        con=engine,
-        if_exists="append",
-        index=False,
-        method="multi", 
-        chunksize=CHUNK_SIZE,
-    )
+
+    print("\nTipos:")
+    print(df.dtypes)
+
+    print("\nValores nulos:")
+    print(df.isnull().sum())
+
+    print("\nAmostra:")
+    print(df.head())
+
+    print(f"\n{table_name} columns:", df.columns.tolist())
+
+    expected_columns = df.columns
+    assert set(df.columns) == set(expected_columns), \
+        f"Schema mismatch para {table_name}"
+
+    try:
+        with engine.begin() as conn:
+            df.to_sql(
+                name=table_name,
+                con=conn,
+                if_exists="append",
+                index=False,
+                chunksize=CHUNK_SIZE,
+                method="multi",
+            )
+
+    except Exception as e:
+        print(f"\nERRO AO CARREGAR {table_name}")
+        print(e)
+
+        # tenta linha por linha para descobrir registro quebrado
+        for i, row in df.iterrows():
+            try:
+                pd.DataFrame([row]).to_sql(
+                    name=table_name,
+                    con=engine,
+                    if_exists="append",
+                    index=False,
+                )
+            except Exception as row_error:
+                print(f"\nLinha com problema: {i}")
+                print(row.to_dict())
+                print(row_error)
+                break
+
+        raise
 
     elapsed = time.time() - start
     print(f"{table_name} carregado em {elapsed:.2f} segundos")
-
+    
 # Faz um check para saber se a tabela está vazia antes de carregar
 def _check_table_empty(table_name: str) -> bool:
     with engine.connect() as conn:
-        result = conn.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
-        count = result.scalar()
-        return count == 0
+        result = conn.execute(
+            text(f'SELECT COUNT(*) FROM "{table_name}"')
+        )
+        return result.scalar() == 0
 
 # Define a ordem e qual func de transform usar para cada tabela
 def run_load() -> None:
