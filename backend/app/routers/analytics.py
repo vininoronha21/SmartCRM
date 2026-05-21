@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func, select, cast, Numeric
 from app.models.order_payment import OrderPayment
+from app.models.order_item import OrderItem
 from app.database import get_db
 from app.database import get_db
 from app.models.order import Order
@@ -60,4 +61,40 @@ def get_revenue(db: DbSession):
     ).scalar()
 
     return {"total_revenue": round(result or 0, 2)}
-    
+
+
+@router.get("/top-sellers")
+def get_top_sellers(db: DbSession, limit: int = 10):
+    """
+    Retorna os sellers com maior receita gerada.
+    """
+    result = db.execute(
+        select(
+          OrderItem.seller_id,
+          func.count(OrderItem.order_id.distinct()).label("total_orders"),
+          func.round(cast(func.sum(OrderItem.price + OrderItem.freight_value), Numeric), 2).label("total_revenue")
+      )
+      .group_by(OrderItem.seller_id)
+      .order_by(func.sum(OrderItem.price + OrderItem.freight_value).desc())
+      .limit(limit)
+    ).all()
+
+    return [{"seller_id": row.seller_id, "total_orders": row.total_orders, "total_revenue": float(row.total_revenue)} for row in result]
+
+@router.get("/payment-distribution")
+def get_payment_distribution(db: DbSession):
+    """
+    Retorna a distribuição de pedidos por tipo de pagamento.
+    Ajuda a entender a preferência de pagamento dos clientes.
+    """
+    result = db.execute(
+        select(
+          OrderPayment.payment_type,
+          func.count(OrderPayment.order_id.distinct()).label("total_orders"),
+          func.round(cast(func.sum(OrderPayment.payment_value), Numeric), 2).label("total_revenue")
+      )
+      .group_by(OrderPayment.payment_type)
+      .order_by(func.count(OrderPayment.order_id.distinct()).desc())
+    ).all()
+
+    return [{"payment_type": row.payment_type, "total_orders": row.total_orders, "total_revenue": float(row.total_revenue)} for row in result]
