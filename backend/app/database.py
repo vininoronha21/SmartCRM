@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+engine = create_engine("postgresql://postgres:docker@localhost:5432/smartcrm", echo=False, pool_pre_ping=True)
+
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
