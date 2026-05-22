@@ -9,6 +9,7 @@ from app.models.order import Order
 from app.models.order_item import OrderItem
 from app.models.order_payment import OrderPayment
 from app.models.product import Product
+from app.utils import make_response
 
 router = APIRouter()
 
@@ -31,8 +32,7 @@ def get_sales_funnel(db: DbSession):
         .order_by(func.count().desc())
     ).all()
 
-    # Converte lista de Row para lista de dicts serializáveis
-    return [{"status": row.status, "total": row.total} for row in result]
+    return make_response([{"status": row.status, "total": row.total} for row in result])
 
 
 @router.get("/conversion-rate")
@@ -49,7 +49,9 @@ def get_conversion_rate(db: DbSession):
     delivered = next((row.total for row in result if row.status == "delivered"), 0)
     rate = round((delivered / total) * 100, 2) if total > 0 else 0
 
-    return {"total_orders": total, "delivered": delivered, "conversion_rate_pct": rate}
+    return make_response(
+        {"total_orders": total, "delivered": delivered, "conversion_rate_pct": rate}
+    )
 
 
 @router.get("/revenue")
@@ -64,7 +66,7 @@ def get_revenue(db: DbSession):
         .where(Order.status == "delivered")
     ).scalar()
 
-    return {"total_revenue": round(result or 0, 2)}
+    return make_response({"total_revenue": round(result or 0, 2)})
 
 
 @router.get("/top-sellers")
@@ -85,14 +87,16 @@ def get_top_sellers(db: DbSession, limit: int = 10):
         .limit(limit)
     ).all()
 
-    return [
-        {
-            "seller_id": row.seller_id,
-            "total_orders": row.total_orders,
-            "total_revenue": float(row.total_revenue),
-        }
-        for row in result
-    ]
+    return make_response(
+        [
+            {
+                "seller_id": row.seller_id,
+                "total_orders": row.total_orders,
+                "total_revenue": float(row.total_revenue),
+            }
+            for row in result
+        ]
+    )
 
 
 @router.get("/payment-distribution")
@@ -113,14 +117,16 @@ def get_payment_distribution(db: DbSession):
         .order_by(func.count(OrderPayment.order_id.distinct()).desc())
     ).all()
 
-    return [
-        {
-            "payment_type": row.payment_type,
-            "total_orders": row.total_orders,
-            "total_revenue": float(row.total_revenue),
-        }
-        for row in result
-    ]
+    return make_response(
+        [
+            {
+                "payment_type": row.payment_type,
+                "total_orders": row.total_orders,
+                "total_revenue": float(row.total_revenue),
+            }
+            for row in result
+        ]
+    )
 
 
 @router.get("/top-products")
@@ -143,11 +149,13 @@ def get_top_products(db: DbSession, limit: int = 10):
         .limit(limit)
     ).all()
 
-    return [
-        {
-            "category": row.category_name,
-            "total_orders": row.total_orders,
-            "total_revenue": float(row.total_revenue),
-        }
-        for row in result
-    ]
+    return make_response(
+        [
+            {
+                "category": row.category_name,
+                "total_orders": row.total_orders,
+                "total_revenue": float(row.total_revenue),
+            }
+            for row in result
+        ]
+    )
