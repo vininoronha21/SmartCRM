@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, select, cast, Numeric
 from app.models.order_payment import OrderPayment
 from app.models.order_item import OrderItem
+from app.models.product import Product
 from app.database import get_db
 from app.database import get_db
 from app.models.order import Order
@@ -32,7 +33,6 @@ def get_sales_funnel(db: DbSession):
     # Converte lista de Row para lista de dicts serializáveis
     return [{"status": row.status, "total": row.total} for row in result]
 
-
 @router.get("/conversion-rate")
 def get_conversion_rate(db: DbSession):
     """
@@ -47,7 +47,6 @@ def get_conversion_rate(db: DbSession):
 
     return {"total_orders": total, "delivered": delivered, "conversion_rate_pct": rate}
 
-
 @router.get("/revenue")
 def get_revenue(db: DbSession):
     """
@@ -61,7 +60,6 @@ def get_revenue(db: DbSession):
     ).scalar()
 
     return {"total_revenue": round(result or 0, 2)}
-
 
 @router.get("/top-sellers")
 def get_top_sellers(db: DbSession, limit: int = 10):
@@ -98,3 +96,23 @@ def get_payment_distribution(db: DbSession):
     ).all()
 
     return [{"payment_type": row.payment_type, "total_orders": row.total_orders, "total_revenue": float(row.total_revenue)} for row in result]
+
+@router.get("/top-products")
+def get_top_products(db: DbSession, limit: int = 10):
+    """
+    Retorna os produtos com maior receita gerada.
+    Agrupa por categoria quando product_id não é suficiente para análise de negócio.
+    """
+    result = db.execute(
+        select(
+          Product.category_name,
+          func.count(OrderItem.order_id.distinct()).label("total_orders"),
+          func.round(cast(func.sum(OrderItem.price), Numeric), 2).label("total_revenue")
+      )
+      .join(Product, Product.product_id == OrderItem.product_id)
+      .group_by(Product.category_name)
+      .order_by(func.sum(OrderItem.price).desc())
+      .limit(limit)
+    ).all()
+
+    return [{"category": row.category_name, "total_orders": row.total_orders, "total_revenue": float(row.total_revenue)} for row in result]
