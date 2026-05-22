@@ -1,9 +1,5 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def make_response(data):
-    """Wrapper padrão para todos os endpoints da API."""
-    return {
-        "data": data,
-        "meta": {"generated_at": datetime.now(timezone.utc).isoformat()}
-    }
+    return {"data": data, "meta": {"generated_at": datetime.now(UTC).isoformat()}}

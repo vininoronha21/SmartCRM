@@ -1,7 +1,8 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import Numeric, cast, func, select
+from sqlalchemy import Numeric, and_, cast, func, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -16,8 +17,17 @@ router = APIRouter()
 DbSession = Annotated[Session, Depends(get_db)]
 
 
+def _date_filters(start_date, end_date):
+    filters = []
+    if start_date:
+        filters.append(Order.purchase_timestamp >= start_date)
+    if end_date:
+        filters.append(Order.purchase_timestamp <= end_date)
+    return filters
+
+
 @router.get("/funnel")
-def get_sales_funnel(db: DbSession):
+def get_sales_funnel(db: DbSession, start_date: date = None, end_date: date = None):
     """
     Retorna a contagem de pedidos agrupada por status.
 
@@ -28,6 +38,7 @@ def get_sales_funnel(db: DbSession):
     # group_by agrupa os resultados por valor único de order_status
     result = db.execute(
         select(Order.status, func.count().label("total"))
+        .where(and_(*_date_filters(start_date, end_date)))
         .group_by(Order.status)
         .order_by(func.count().desc())
     ).all()
@@ -36,13 +47,15 @@ def get_sales_funnel(db: DbSession):
 
 
 @router.get("/conversion-rate")
-def get_conversion_rate(db: DbSession):
+def get_conversion_rate(db: DbSession, start_date: date = None, end_date: date = None):
     """
     Retorna a taxa de conversão: pedidos entregues / total de pedidos.
     Métrica central do funil — indica a eficiência do processo de venda.
     """
     result = db.execute(
-        select(Order.status, func.count().label("total")).group_by(Order.status)
+        select(Order.status, func.count().label("total"))
+        .where(and_(*_date_filters(start_date, end_date)))
+        .group_by(Order.status)
     ).all()
 
     total = sum(row.total for row in result)
@@ -55,13 +68,14 @@ def get_conversion_rate(db: DbSession):
 
 
 @router.get("/revenue")
-def get_revenue(db: DbSession):
+def get_revenue(db: DbSession, start_date: date = None, end_date: date = None):
     """
     Retorna a receita total somando todos os pagamentos realizados.
     Considera apenas pedidos delivered para refletir receita realizada.
     """
     result = db.execute(
         select(func.sum(OrderPayment.payment_value).label("total_revenue"))
+        .where(and_(*_date_filters(start_date, end_date)))
         .join(Order, Order.order_id == OrderPayment.order_id)
         .where(Order.status == "delivered")
     ).scalar()
@@ -70,7 +84,9 @@ def get_revenue(db: DbSession):
 
 
 @router.get("/top-sellers")
-def get_top_sellers(db: DbSession, limit: int = 10):
+def get_top_sellers(
+    db: DbSession, start_date: date = None, end_date: date = None, limit: int = 10
+):
     """
     Retorna os sellers com maior receita gerada.
     """
@@ -82,6 +98,7 @@ def get_top_sellers(db: DbSession, limit: int = 10):
                 cast(func.sum(OrderItem.price + OrderItem.freight_value), Numeric), 2
             ).label("total_revenue"),
         )
+        .where(and_(*_date_filters(start_date, end_date)))
         .group_by(OrderItem.seller_id)
         .order_by(func.sum(OrderItem.price + OrderItem.freight_value).desc())
         .limit(limit)
@@ -130,7 +147,9 @@ def get_payment_distribution(db: DbSession):
 
 
 @router.get("/top-products")
-def get_top_products(db: DbSession, limit: int = 10):
+def get_top_products(
+    db: DbSession, start_date: date = None, end_date: date = None, limit: int = 10
+):
     """
     Retorna os produtos com maior receita gerada.
     Agrupa por categoria quando product_id não é suficiente para análise de negócio.
@@ -143,6 +162,7 @@ def get_top_products(db: DbSession, limit: int = 10):
                 "total_revenue"
             ),
         )
+        .where(and_(*_date_filters(start_date, end_date)))
         .join(Product, Product.product_id == OrderItem.product_id)
         .group_by(Product.category_name)
         .order_by(func.sum(OrderItem.price).desc())
