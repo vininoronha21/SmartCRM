@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import Numeric, and_, cast, func, select
 from sqlalchemy.orm import Session
 
@@ -85,7 +85,10 @@ def get_revenue(db: DbSession, start_date: date = None, end_date: date = None):
 
 @router.get("/top-sellers")
 def get_top_sellers(
-    db: DbSession, start_date: date = None, end_date: date = None, limit: int = 10
+    db: DbSession,
+    start_date: date = None,
+    end_date: date = None,
+    limit: int = Query(default=10, ge=1, le=50),
 ):
     """
     Retorna os sellers com maior receita gerada.
@@ -148,7 +151,10 @@ def get_payment_distribution(db: DbSession):
 
 @router.get("/top-products")
 def get_top_products(
-    db: DbSession, start_date: date = None, end_date: date = None, limit: int = 10
+    db: DbSession,
+    start_date: date = None,
+    end_date: date = None,
+    limit: int = Query(default=10, ge=1, le=50),
 ):
     """
     Retorna os produtos com maior receita gerada.
