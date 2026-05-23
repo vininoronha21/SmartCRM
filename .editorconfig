@@ -1,0 +1,42 @@
+# Indica que esse é o arquivo raiz
+root = true
+
+# Aplica a todos os arquivos que não tenham regra específica abaixo
+[*]
+
+# Encoding universal — evita problemas com caracteres especiais
+charset = utf-8
+
+# Estilo de indentação: espaços (não tabs)
+indent_style = space
+
+# Tamanho da indentação: 4 espaços como padrão global
+indent_size = 4
+
+# Estilo de quebra de linha: lf (Unix)
+# Evita o problema clássico de CRLF no Windows quebrando scripts Python/bash
+end_of_line = lf
+
+# Remove espaços em branco no final de cada linha
+trim_trailing_whitespace = true
+
+# Garante uma linha em branco no final do arquivo
+# Padrão Unix — evita warnings em git diff e ferramentas POSIX
+insert_final_newline = true
+
+# PYTHON
+[*.py]
+indent_size = 4
+max_line_length = 88
+
+# FRONTEND e CONFIG
+[*.{js,ts,jsx,tsx,html,css,json,jsonc,yaml,yml}]
+indent_size = 2
+
+# TOML
+[*.toml]
+indent_size = 4
+
+# MARKDOWN
+[*.md]
+trim_trailing_whitespace = false
