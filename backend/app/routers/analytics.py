@@ -121,7 +121,9 @@ def get_top_sellers(
 
 
 @router.get("/payment-distribution")
-def get_payment_distribution(db: DbSession):
+def get_payment_distribution(
+    db: DbSession, start_date: date = None, end_date: date = None
+):
     """
     Retorna a distribuição de pedidos por tipo de pagamento.
     Ajuda a entender a preferência de pagamento dos clientes.
@@ -134,6 +136,8 @@ def get_payment_distribution(db: DbSession):
                 "total_revenue"
             ),
         )
+        .join(Order, Order.order_id == OrderPayment.order_id)
+        .where(and_(*_date_filters(start_date, end_date)))
         .group_by(OrderPayment.payment_type)
         .order_by(func.count(OrderPayment.order_id.distinct()).desc())
     ).all()
@@ -169,8 +173,9 @@ def get_top_products(
                 "total_revenue"
             ),
         )
-        .where(and_(*_date_filters(start_date, end_date)))
+        .join(Order, Order.order_id == OrderItem.order_id)
         .join(Product, Product.product_id == OrderItem.product_id)
+        .where(and_(*_date_filters(start_date, end_date)))
         .group_by(Product.category_name)
         .order_by(func.sum(OrderItem.price).desc())
         .limit(limit)

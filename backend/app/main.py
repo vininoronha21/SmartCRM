@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.database import engine
 from app.models import Base
@@ -19,6 +20,17 @@ app.add_middleware(
 )
 
 app.include_router(analytics.router, prefix="/api/v1", tags=["analytics"])
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "An unexpected error occurred. Please try again later.",
+            "detail": str(exc),
+        },
+    )
 
 
 @app.get("/health")
