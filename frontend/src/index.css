@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+:root {
+  --color-text-primary: #37352f;
+  --color-text-secondary: #787774;
+  --color-text-tertiary: #9b9a97;
+
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f7f6f3;
+  --color-bg-tertiary: #efeeeb;
+  --color-border: #e3e2e0;
+
+  --color-primary: #2383e2;
+  --color-primary-hover: #0b6bcb;
+  --color-primary-light: #e7f3ff;
+
+  --status-delivered: #0f7b6c;
+  --status-delivered-bg: #dbeddb;
+  --status-shipped: #2383e2;
+  --status-shipped-bg: #e7f3ff;
+  --status-processing: #d9730d;
+  --status-processing-bg: #fbf3db;
+  --status-canceled: #e03e3e;
+  --status-canceled-bg: #ffe2dd;
+  --status-invoiced: #9065b0;
+  --status-invoiced-bg: #f6f3f8;
+  --status-default: #787774;
+  --status-default-bg: #f1f1ef;
+
+  --metric-revenue: #0f7b6c;
+  --metric-orders: #2383e2;
+  --metric-conversion: #d9730d;
+  --metric-canceled: #e03e3e;
+
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-bold: 700;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  --sidebar-width: 220px;
+  --topbar-height: 52px;
+  --content-padding: 32px;
+  --card-gap: 16px;
+  --section-gap: 24px;
+  --table-row-height: 44px;
+  --chart-height-sm: 220px;
+  --chart-height-lg: 280px;
+
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  --transition-base: 120ms ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-primary);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
