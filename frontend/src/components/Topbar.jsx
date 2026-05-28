@@ -1,26 +1,43 @@
 import { formatDateTime } from '../utils/formatters'
 
 import { DateFilter } from './DateFilter'
+import { ThemeToggle } from './ThemeToggle'
 
 export function Topbar({
+  title = 'Dashboard',
   filters,
   lastUpdatedAt,
   loading,
+  theme,
+  sidebarOpen,
   onApplyFilters,
   onClearFilters,
   onRefresh,
+  onToggleSidebar,
+  onToggleTheme,
 }) {
   const formattedLastUpdate = formatDateTime(lastUpdatedAt)
 
   return (
     <header className="topbar">
-      <div>
-        <h1 className="page-title">Dashboard</h1>
-        <p className="topbar-meta">
-          {lastUpdatedAt
-            ? `Atualizado em ${formattedLastUpdate}`
-            : 'Carregando dados...'}
-        </p>
+      <div className="topbar-heading">
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={onToggleSidebar}
+          aria-label={sidebarOpen ? 'Ocultar barra lateral' : 'Mostrar barra lateral'}
+          title={sidebarOpen ? 'Ocultar barra lateral' : 'Mostrar barra lateral'}
+        >
+          ☰
+        </button>
+        <div>
+          <h1 className="page-title">{title}</h1>
+          <p className="topbar-meta">
+            {lastUpdatedAt
+              ? `Atualizado em ${formattedLastUpdate}`
+              : 'Carregando dados...'}
+          </p>
+        </div>
       </div>
 
       <div className="topbar-actions">
@@ -39,6 +56,7 @@ export function Topbar({
         >
           {loading ? 'Atualizando...' : 'Atualizar'}
         </button>
+        <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </div>
     </header>
   )

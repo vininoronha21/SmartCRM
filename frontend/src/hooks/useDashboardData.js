@@ -14,7 +14,10 @@ const INITIAL_DATA = {
     total_revenue: 0,
   },
   topSellers: [],
+  topSellersExtended: [],
   topProducts: [],
+  topProductsExtended: [],
+  topCategoriesByRevenue: [],
   paymentDistribution: [],
   revenueTimeline: [],
 }

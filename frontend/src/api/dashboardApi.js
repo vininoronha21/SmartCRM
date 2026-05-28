@@ -47,22 +47,37 @@ function buildDateQuery(filters) {
 export async function fetchDashboardCore(filters) {
   const dateQuery = buildDateQuery(filters)
 
-  const [funnel, conversion, revenue, topSellers, topProducts, paymentDistribution] =
-    await Promise.all([
-      fetchApi('/funnel', dateQuery),
-      fetchApi('/conversion-rate', dateQuery),
-      fetchApi('/revenue', dateQuery),
-      fetchApi('/top-sellers', { ...dateQuery, limit: 10 }),
-      fetchApi('/top-products', { ...dateQuery, limit: 10 }),
-      fetchApi('/payment-distribution'),
-    ])
+  const [
+    funnel,
+    conversion,
+    revenue,
+    topSellers,
+    topSellersExtended,
+    topProducts,
+    topProductsExtended,
+    topCategoriesByRevenue,
+    paymentDistribution,
+  ] = await Promise.all([
+    fetchApi('/funnel', dateQuery),
+    fetchApi('/conversion-rate', dateQuery),
+    fetchApi('/revenue', dateQuery),
+    fetchApi('/top-sellers', { ...dateQuery, limit: 10 }),
+    fetchApi('/top-sellers', { ...dateQuery, limit: 50 }),
+    fetchApi('/top-products', { ...dateQuery, limit: 10 }),
+    fetchApi('/top-products', { ...dateQuery, limit: 20 }),
+    fetchApi('/top-products', { ...dateQuery, limit: 8 }),
+    fetchApi('/payment-distribution', dateQuery),
+  ])
 
   return {
     funnel,
     conversion,
     revenue,
     topSellers,
+    topSellersExtended,
     topProducts,
+    topProductsExtended,
+    topCategoriesByRevenue,
     paymentDistribution,
   }
 }

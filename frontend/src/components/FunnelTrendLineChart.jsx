@@ -5,16 +5,23 @@ import {
   chartColors,
   getChartBaseOptions,
   getTooltipOptions,
+  statusLabels,
 } from '../constants/chart'
-import { formatCurrency } from '../utils/formatters'
+import { buildFunnelTrendData } from '../utils/chartData'
 
-export function RevenueChart({ data, theme }) {
+export function FunnelTrendLineChart({ data, theme }) {
+  const trendData = buildFunnelTrendData(data)
+
+  if (!trendData.length) {
+    return <p className="empty-state">Sem dados no período selecionado.</p>
+  }
+
   const chartData = {
-    labels: data.map((item) => item.label),
+    labels: trendData.map((item) => statusLabels[item.label] || item.label),
     datasets: [
       {
-        label: 'Receita (R$)',
-        data: data.map((item) => item.totalRevenue),
+        label: 'Progresso do funil (%)',
+        data: trendData.map((item) => item.progressPct),
         borderColor: chartColors.revenue,
         backgroundColor: chartColors.revenueArea,
         fill: true,
@@ -33,7 +40,7 @@ export function RevenueChart({ data, theme }) {
       ...baseOptions.plugins,
       legend: { display: false },
       tooltip: getTooltipOptions(theme, {
-        label: (context) => ` ${formatCurrency(context.raw)}`,
+        label: (context) => ` ${context.raw}%`,
       }),
     },
     scales: {
@@ -43,17 +50,13 @@ export function RevenueChart({ data, theme }) {
       y: {
         ...baseOptions.scales.y,
         beginAtZero: true,
+        max: 100,
         ticks: {
           ...baseOptions.scales.y.ticks,
-          callback: (value) =>
-            formatCurrency(value).replace(',00', '').replace('R$', 'R$ '),
+          callback: (value) => `${value}%`,
         },
       },
     },
-  }
-
-  if (!data.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
   }
 
   return <Line data={chartData} options={options} />

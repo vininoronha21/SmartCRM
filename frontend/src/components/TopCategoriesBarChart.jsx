@@ -5,19 +5,21 @@ import {
   chartColors,
   getChartBaseOptions,
   getTooltipOptions,
-  statusLabels,
 } from '../constants/chart'
+import { formatCurrency } from '../utils/formatters'
 
-export function FunnelChart({ data, theme }) {
+export function TopCategoriesBarChart({ data, theme }) {
+  if (!data.length) {
+    return <p className="empty-state">Sem dados no período selecionado.</p>
+  }
+
   const chartData = {
-    labels: data.map((item) => statusLabels[item.status] || item.status),
+    labels: data.map((item) => item.category || 'unknown'),
     datasets: [
       {
-        label: 'Pedidos',
-        data: data.map((item) => item.total),
-        backgroundColor: data.map(
-          (item) => chartColors[item.status] || chartColors.default,
-        ),
+        label: 'Receita por categoria',
+        data: data.map((item) => item.total_revenue),
+        backgroundColor: chartColors.orders,
         borderRadius: 4,
         borderWidth: 0,
       },
@@ -33,7 +35,7 @@ export function FunnelChart({ data, theme }) {
       ...baseOptions.plugins,
       legend: { display: false },
       tooltip: getTooltipOptions(theme, {
-        label: (context) => ` ${Number(context.raw || 0).toLocaleString('pt-BR')}`,
+        label: (context) => ` ${formatCurrency(context.raw)}`,
       }),
     },
     scales: {
@@ -43,13 +45,8 @@ export function FunnelChart({ data, theme }) {
       },
       y: {
         ...baseOptions.scales.y,
-        grid: { display: false },
       },
     },
-  }
-
-  if (!data.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
   }
 
   return <Bar data={chartData} options={options} />

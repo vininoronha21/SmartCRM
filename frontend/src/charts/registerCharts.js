@@ -24,3 +24,6 @@ ChartJS.register(
   Title,
   Tooltip,
 )
+
+ChartJS.defaults.font.family = 'Inter'
+ChartJS.defaults.font.size = 12
