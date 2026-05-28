@@ -101,6 +101,7 @@ def get_top_sellers(
                 cast(func.sum(OrderItem.price + OrderItem.freight_value), Numeric), 2
             ).label("total_revenue"),
         )
+        .join(Order, Order.order_id == OrderItem.order_id)
         .where(and_(*_date_filters(start_date, end_date)))
         .group_by(OrderItem.seller_id)
         .order_by(func.sum(OrderItem.price + OrderItem.freight_value).desc())
