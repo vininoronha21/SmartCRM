@@ -1,24 +1,118 @@
 export const chartColors = {
-  orders: '#2383E2',
-  delivered: '#22C55E',
-  shipped: '#3B82F6',
-  processing: '#F59E0B',
-  canceled: '#EF4444',
-  invoiced: '#8B5CF6',
-  approved: '#64748B',
-  created: '#94A3B8',
-  unavailable: '#CBD5E1',
-  default: '#9CA3AF',
+  palette: [
+    '#0F6F63',
+    '#36B89B',
+    '#FF7637',
+    '#A9D9DF',
+    '#E2E2E2',
+    '#6F7474',
+  ],
+  paletteHover: [
+    '#095B51',
+    '#1FA886',
+    '#F15F22',
+    '#86CBD4',
+    '#CFCFCF',
+    '#555B5B',
+  ],
+  delivered: '#0F6F63',
+  shipped: '#36B89B',
+  processing: '#FF7637',
+  canceled: '#B5361F',
+  invoiced: '#A9D9DF',
+  outros: '#E2E2E2',
+  deliveredHover: '#095B51',
+  shippedHover: '#1FA886',
+  processingHover: '#F15F22',
+  canceledHover: '#962914',
+  invoicedHover: '#86CBD4',
+  darkPalette: [
+    '#2563EB',
+    '#DC4F45',
+    '#16A36B',
+    '#D99122',
+    '#7C3AED',
+    '#DB2777',
+  ],
+  darkPaletteHover: [
+    '#4A9EF5',
+    '#F47A6E',
+    '#34D399',
+    '#F5BC4A',
+    '#A78BFA',
+    '#F585CC',
+  ],
+  darkDelivered: '#16A36B',
+  darkShipped: '#2563EB',
+  darkProcessing: '#D99122',
+  darkCanceled: '#DC4F45',
+  darkInvoiced: '#7C3AED',
+  darkOutros: '#52525B',
+  darkDeliveredHover: '#34D399',
+  darkShippedHover: '#4A9EF5',
+  darkProcessingHover: '#F5BC4A',
+  darkCanceledHover: '#F47A6E',
+  darkInvoicedHover: '#A78BFA',
+}
 
-  credit_card: '#2383E2',
-  boleto: '#D9730D',
-  voucher: '#9065B0',
-  debit_card: '#0F7B6C',
-  not_defined: '#9B9A97',
-  others: '#787774',
+const statusColorKeys = {
+  delivered: 'delivered',
+  shipped: 'shipped',
+  processing: 'processing',
+  canceled: 'canceled',
+  invoiced: 'invoiced',
+}
 
-  revenue: '#2563EB',
-  revenueArea: 'rgba(37, 99, 235, 0.10)',
+export function getChartPalette(theme) {
+  return theme === 'dark' ? chartColors.darkPalette : chartColors.palette
+}
+
+export function getChartPaletteHover(theme) {
+  return theme === 'dark'
+    ? chartColors.darkPaletteHover
+    : chartColors.paletteHover
+}
+
+export function getStatusColor(status, theme) {
+  const colorKey = statusColorKeys[status]
+
+  if (!colorKey) {
+    return theme === 'dark' ? chartColors.darkOutros : chartColors.outros
+  }
+
+  return theme === 'dark'
+    ? chartColors[`dark${colorKey[0].toUpperCase()}${colorKey.slice(1)}`]
+    : chartColors[colorKey]
+}
+
+export function getStatusHoverColor(status, theme) {
+  const colorKey = statusColorKeys[status]
+
+  if (!colorKey) {
+    return theme === 'dark' ? chartColors.darkOutros : chartColors.outros
+  }
+
+  return theme === 'dark'
+    ? chartColors[`dark${colorKey[0].toUpperCase()}${colorKey.slice(1)}Hover`]
+    : chartColors[`${colorKey}Hover`]
+}
+
+export function getLineChartColors(theme) {
+  if (theme === 'dark') {
+    return {
+      border: '#4A9EF5',
+      background: 'rgba(74, 158, 245, 0.2)',
+      point: '#4A9EF5',
+      pointHover: '#7EB8F7',
+    }
+  }
+
+  return {
+    border: '#8A8F98',
+    background: 'rgba(138, 143, 152, 0.14)',
+    point: '#8A8F98',
+    pointHover: '#5F6670',
+  }
 }
 
 export const statusLabels = {

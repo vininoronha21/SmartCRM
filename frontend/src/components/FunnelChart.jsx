@@ -2,11 +2,14 @@ import { Bar } from 'react-chartjs-2'
 
 import '../charts/registerCharts'
 import {
-  chartColors,
   getChartBaseOptions,
+  getStatusColor,
+  getStatusHoverColor,
   getTooltipOptions,
   statusLabels,
 } from '../constants/chart'
+
+import { EmptyState } from './DataStates'
 
 export function FunnelChart({ data, theme }) {
   const chartData = {
@@ -15,10 +18,12 @@ export function FunnelChart({ data, theme }) {
       {
         label: 'Pedidos',
         data: data.map((item) => item.total),
-        backgroundColor: data.map(
-          (item) => chartColors[item.status] || chartColors.default,
+        backgroundColor: data.map((item) => getStatusColor(item.status, theme)),
+        hoverBackgroundColor: data.map((item) =>
+          getStatusHoverColor(item.status, theme),
         ),
-        borderRadius: 4,
+        borderRadius: 6,
+        borderSkipped: false,
         borderWidth: 0,
       },
     ],
@@ -29,6 +34,11 @@ export function FunnelChart({ data, theme }) {
   const options = {
     ...baseOptions,
     indexAxis: 'y',
+    animation: {
+      duration: 600,
+      easing: 'easeOutQuart',
+      delay: (context) => context.dataIndex * 60,
+    },
     plugins: {
       ...baseOptions.plugins,
       legend: { display: false },
@@ -49,7 +59,7 @@ export function FunnelChart({ data, theme }) {
   }
 
   if (!data.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
+    return <EmptyState />
   }
 
   return <Bar data={chartData} options={options} />

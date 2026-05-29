@@ -1,6 +1,8 @@
 import { formatCurrency, formatNumber, formatPercent } from '../utils/formatters'
 import { paymentLabels } from '../constants/chart'
 
+import { EmptyState } from './DataStates'
+
 function TopSellersByState({ rows }) {
   return (
     <section className="report-block">
@@ -12,7 +14,7 @@ function TopSellersByState({ rows }) {
       </header>
 
       {!rows.length ? (
-        <p className="empty-state">Sem sellers para o período selecionado.</p>
+        <EmptyState message="Sem sellers para o período selecionado." />
       ) : (
         <table className="data-table">
           <thead>
@@ -52,7 +54,7 @@ function ProductsByCategory({ rows, totalRevenue }) {
       </header>
 
       {!rows.length ? (
-        <p className="empty-state">Sem categorias para o período selecionado.</p>
+        <EmptyState message="Sem categorias para o período selecionado." />
       ) : (
         <table className="data-table">
           <thead>
@@ -102,7 +104,7 @@ function PaymentBreakdown({ rows }) {
       </header>
 
       {!rows.length ? (
-        <p className="empty-state">Sem dados de pagamento no período selecionado.</p>
+        <EmptyState message="Sem dados de pagamento no período selecionado." />
       ) : (
         <table className="data-table">
           <thead>

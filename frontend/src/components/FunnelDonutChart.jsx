@@ -2,12 +2,15 @@ import { Doughnut } from 'react-chartjs-2'
 
 import '../charts/registerCharts'
 import {
-  chartColors,
   getChartBaseOptions,
+  getStatusColor,
+  getStatusHoverColor,
   getTooltipOptions,
   statusLabels,
 } from '../constants/chart'
 import { buildFunnelDonutData } from '../utils/chartData'
+
+import { EmptyState } from './DataStates'
 
 const centerTextPlugin = {
   id: 'centerText',
@@ -51,7 +54,7 @@ export function FunnelDonutChart({ data, theme }) {
   const donutData = buildFunnelDonutData(data, 5)
 
   if (!donutData.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
+    return <EmptyState />
   }
 
   const chartData = {
@@ -59,9 +62,13 @@ export function FunnelDonutChart({ data, theme }) {
     datasets: [
       {
         data: donutData.map((item) => item.total),
-        backgroundColor: donutData.map(
-          (item) => chartColors[item.status] || chartColors.default,
+        backgroundColor: donutData.map((item) =>
+          getStatusColor(item.status, theme),
         ),
+        hoverBackgroundColor: donutData.map((item) =>
+          getStatusHoverColor(item.status, theme),
+        ),
+        hoverOffset: 22,
         borderRadius: 8,
         borderWidth: 0,
       },
@@ -74,6 +81,21 @@ export function FunnelDonutChart({ data, theme }) {
     ...baseOptions,
     cutout: '62%',
     scales: undefined,
+    hover: { mode: 'nearest' },
+    animation: {
+      animateRotate: true,
+      animateScale: true,
+      duration: 500,
+      easing: 'easeOutQuart',
+    },
+    transitions: {
+      active: {
+        animation: {
+          duration: 260,
+          easing: 'easeOutBack',
+        },
+      },
+    },
     plugins: {
       ...baseOptions.plugins,
       legend: {

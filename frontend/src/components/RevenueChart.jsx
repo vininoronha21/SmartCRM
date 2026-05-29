@@ -2,21 +2,27 @@ import { Line } from 'react-chartjs-2'
 
 import '../charts/registerCharts'
 import {
-  chartColors,
   getChartBaseOptions,
+  getLineChartColors,
   getTooltipOptions,
 } from '../constants/chart'
 import { formatCurrency } from '../utils/formatters'
 
+import { EmptyState } from './DataStates'
+
 export function RevenueChart({ data, theme }) {
+  const lineColors = getLineChartColors(theme)
+
   const chartData = {
     labels: data.map((item) => item.label),
     datasets: [
       {
         label: 'Receita (R$)',
         data: data.map((item) => item.totalRevenue),
-        borderColor: chartColors.revenue,
-        backgroundColor: chartColors.revenueArea,
+        borderColor: lineColors.border,
+        backgroundColor: lineColors.background,
+        pointBackgroundColor: lineColors.point,
+        pointHoverBackgroundColor: lineColors.pointHover,
         fill: true,
         tension: 0.28,
         pointRadius: 3,
@@ -53,7 +59,7 @@ export function RevenueChart({ data, theme }) {
   }
 
   if (!data.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
+    return <EmptyState />
   }
 
   return <Line data={chartData} options={options} />

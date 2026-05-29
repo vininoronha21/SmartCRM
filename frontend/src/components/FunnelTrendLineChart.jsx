@@ -2,19 +2,23 @@ import { Line } from 'react-chartjs-2'
 
 import '../charts/registerCharts'
 import {
-  chartColors,
   getChartBaseOptions,
+  getLineChartColors,
   getTooltipOptions,
   statusLabels,
 } from '../constants/chart'
 import { buildFunnelTrendData } from '../utils/chartData'
 
+import { EmptyState } from './DataStates'
+
 export function FunnelTrendLineChart({ data, theme }) {
   const trendData = buildFunnelTrendData(data)
 
   if (!trendData.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
+    return <EmptyState />
   }
+
+  const lineColors = getLineChartColors(theme)
 
   const chartData = {
     labels: trendData.map((item) => statusLabels[item.label] || item.label),
@@ -22,8 +26,10 @@ export function FunnelTrendLineChart({ data, theme }) {
       {
         label: 'Progresso do funil (%)',
         data: trendData.map((item) => item.progressPct),
-        borderColor: chartColors.revenue,
-        backgroundColor: chartColors.revenueArea,
+        borderColor: lineColors.border,
+        backgroundColor: lineColors.background,
+        pointBackgroundColor: lineColors.point,
+        pointHoverBackgroundColor: lineColors.pointHover,
         fill: true,
         tension: 0.28,
         pointRadius: 3,

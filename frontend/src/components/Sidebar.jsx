@@ -1,10 +1,9 @@
 const navItems = [
   { id: 'dashboard', label: 'Dashboard' },
-  { id: 'analytics', label: 'Analytics' },
   { id: 'reports', label: 'Reports' },
 ]
 
-export function Sidebar({ activeTab, isOpen, onSelectTab }) {
+export function Sidebar({ activeTab, isOpen, onOpenAbout, onSelectTab }) {
   return (
     <aside
       className={`sidebar ${isOpen ? '' : 'sidebar-hidden'}`.trim()}
@@ -24,6 +23,12 @@ export function Sidebar({ activeTab, isOpen, onSelectTab }) {
           </button>
         ))}
       </nav>
+      <div className="sidebar-footer">
+        <button type="button" className="read-more-btn" onClick={onOpenAbout}>
+          <span className="read-more-icon">✦</span>
+          Read More
+        </button>
+      </div>
     </aside>
   )
 }
