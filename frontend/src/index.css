@@ -1,36 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --color-text-primary: #37352f;
-  --color-text-secondary: #787774;
-  --color-text-tertiary: #9b9a97;
+  --color-text-primary: #202425;
+  --color-text-secondary: #6f7474;
+  --color-text-tertiary: #9aa0a0;
 
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f7f9fc;
-  --color-bg-tertiary: #eef2f7;
-  --color-border: #e3e2e0;
+  --color-bg-secondary: #eeeeed;
+  --color-bg-tertiary: #e6eeec;
+  --color-border: #e3e4e2;
 
-  --color-primary: #2383e2;
-  --color-primary-hover: #0b6bcb;
-  --color-primary-light: #e7f3ff;
+  --color-primary: #1c8075;
+  --color-primary-hover: #095b51;
+  --color-primary-light: #d9efeb;
 
-  --status-delivered: #0f7b6c;
-  --status-delivered-bg: #dbeddb;
-  --status-shipped: #2383e2;
-  --status-shipped-bg: #e7f3ff;
-  --status-processing: #d9730d;
-  --status-processing-bg: #fbf3db;
-  --status-canceled: #e03e3e;
+  --status-delivered: #0f6f63;
+  --status-delivered-bg: #d9efeb;
+  --status-shipped: #36b89b;
+  --status-shipped-bg: #dff5ef;
+  --status-processing: #ff7637;
+  --status-processing-bg: #ffe7d9;
+  --status-canceled: #c63218;
   --status-canceled-bg: #ffe2dd;
-  --status-invoiced: #9065b0;
-  --status-invoiced-bg: #f6f3f8;
-  --status-default: #787774;
-  --status-default-bg: #f1f1ef;
+  --status-invoiced: #9aebf6;
+  --status-invoiced-bg: #e8f6f8;
+  --status-default: #787c74;
+  --status-default-bg: #eeeded;
 
-  --metric-revenue: #16a34a;
-  --metric-orders: #2563eb;
-  --metric-conversion: #16a34a;
-  --metric-canceled: #ef4444;
+  --metric-revenue: #159da4;
+  --metric-orders: #3fb89e;
+  --metric-conversion: #0e7468;
+  --metric-canceled: #dd3011;
 
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-regular: 400;
@@ -62,7 +62,7 @@
   --card-gap: 16px;
   --section-gap: 24px;
   --table-row-height: 48px;
-  --chart-height-sm: 220px;
+  --chart-height-sm: 230px;
   --chart-height-lg: 280px;
 
   --radius-sm: 3px;
@@ -75,13 +75,16 @@
 }
 
 [data-theme='dark'] {
-  --color-text-primary: #e8e9ec;
+  --color-text-primary: #ece8e9;
   --color-text-secondary: #8b8fa8;
   --color-text-tertiary: #5a5e72;
-  --color-bg-primary: #1a1d27;
+  --color-bg-primary: #191b27;
   --color-bg-secondary: #0f1117;
-  --color-bg-tertiary: #22263a;
+  --color-bg-tertiary: #24283b;
   --color-border: rgba(255, 255, 255, 0.06);
+  --color-primary: #4a9ef5;
+  --color-primary-hover: #7eb8f7;
+  --color-primary-light: rgba(74, 158, 245, 0.16);
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.32);
 }

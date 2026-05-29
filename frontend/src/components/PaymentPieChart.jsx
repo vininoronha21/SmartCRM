@@ -2,15 +2,20 @@ import { Pie } from 'react-chartjs-2'
 
 import '../charts/registerCharts'
 import {
-  chartColors,
   getChartBaseOptions,
+  getChartPalette,
+  getChartPaletteHover,
   getTooltipOptions,
   paymentLabels,
 } from '../constants/chart'
 import { limitPieData } from '../utils/chartData'
 
+import { EmptyState } from './DataStates'
+
 export function PaymentPieChart({ data, theme }) {
   const limitedData = limitPieData(data, 5)
+  const palette = getChartPalette(theme)
+  const paletteHover = getChartPaletteHover(theme)
 
   const chartData = {
     labels: limitedData.map(
@@ -21,9 +26,13 @@ export function PaymentPieChart({ data, theme }) {
         label: 'Pedidos',
         data: limitedData.map((item) => item.total_orders),
         backgroundColor: limitedData.map(
-          (item) => chartColors[item.payment_type] || chartColors.others,
+          (_item, index) => palette[index % palette.length],
+        ),
+        hoverBackgroundColor: limitedData.map(
+          (_item, index) => paletteHover[index % paletteHover.length],
         ),
         borderWidth: 0,
+        hoverOffset: 22,
         borderRadius: 8,
       },
     ],
@@ -34,6 +43,21 @@ export function PaymentPieChart({ data, theme }) {
   const options = {
     ...baseOptions,
     scales: undefined,
+    hover: { mode: 'nearest' },
+    animation: {
+      animateRotate: true,
+      animateScale: true,
+      duration: 500,
+      easing: 'easeOutQuart',
+    },
+    transitions: {
+      active: {
+        animation: {
+          duration: 260,
+          easing: 'easeOutBack',
+        },
+      },
+    },
     plugins: {
       ...baseOptions.plugins,
       legend: {
@@ -47,7 +71,7 @@ export function PaymentPieChart({ data, theme }) {
   }
 
   if (!data.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
+    return <EmptyState />
   }
 
   return <Pie data={chartData} options={options} />

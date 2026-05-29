@@ -1,8 +1,10 @@
 import { formatCurrency, formatNumber } from '../utils/formatters'
 
+import { EmptyState } from './DataStates'
+
 export function TopSellersTable({ rows }) {
   if (!rows.length) {
-    return <p className="empty-state">Sem sellers para o período selecionado.</p>
+    return <EmptyState message="Sem sellers para o período selecionado." />
   }
 
   return (

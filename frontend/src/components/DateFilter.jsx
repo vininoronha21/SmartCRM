@@ -9,6 +9,7 @@ export function DateFilter({
   const [startDate, setStartDate] = useState(filters.startDate)
   const [endDate, setEndDate] = useState(filters.endDate)
   const [validationError, setValidationError] = useState('')
+  const hasActiveFilter = Boolean(startDate || endDate)
 
   function handleApply() {
     if (startDate && endDate && startDate > endDate) {
@@ -54,14 +55,16 @@ export function DateFilter({
         >
           Aplicar
         </button>
-        <button
-          type="button"
-          className="filter-btn-clear"
-          onClick={handleClear}
-          disabled={disabled}
-        >
-          Limpar
-        </button>
+        {hasActiveFilter ? (
+          <button
+            type="button"
+            className="filter-btn-clear"
+            onClick={handleClear}
+            disabled={disabled}
+          >
+            ✕ Limpar filtros
+          </button>
+        ) : null}
       </div>
       {validationError ? (
         <p className="filter-error" role="alert">

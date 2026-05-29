@@ -2,17 +2,23 @@ import { Bar } from 'react-chartjs-2'
 
 import '../charts/registerCharts'
 import {
-  chartColors,
   getChartBaseOptions,
+  getChartPalette,
+  getChartPaletteHover,
   getTooltipOptions,
   paymentLabels,
 } from '../constants/chart'
 import { formatCurrency } from '../utils/formatters'
 
+import { EmptyState } from './DataStates'
+
 export function PaymentRevenueBarChart({ data, theme }) {
   if (!data.length) {
-    return <p className="empty-state">Sem dados no período selecionado.</p>
+    return <EmptyState />
   }
+
+  const palette = getChartPalette(theme)
+  const paletteHover = getChartPaletteHover(theme)
 
   const chartData = {
     labels: data.map(
@@ -23,10 +29,14 @@ export function PaymentRevenueBarChart({ data, theme }) {
         label: 'Receita por tipo de pagamento',
         data: data.map((item) => item.total_revenue),
         backgroundColor: data.map(
-          (item) => chartColors[item.payment_type] || chartColors.default,
+          (_item, index) => palette[index % palette.length],
+        ),
+        hoverBackgroundColor: data.map(
+          (_item, index) => paletteHover[index % paletteHover.length],
         ),
         borderWidth: 0,
-        borderRadius: 4,
+        borderRadius: 6,
+        borderSkipped: false,
       },
     ],
   }
@@ -35,6 +45,11 @@ export function PaymentRevenueBarChart({ data, theme }) {
 
   const options = {
     ...baseOptions,
+    animation: {
+      duration: 600,
+      easing: 'easeOutQuart',
+      delay: (context) => context.dataIndex * 60,
+    },
     plugins: {
       ...baseOptions.plugins,
       legend: { display: false },
