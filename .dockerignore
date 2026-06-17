@@ -1,0 +1,16 @@
+.git
+.idea
+.pytest_cache
+__pycache__
+*.py[cod]
+.DS_Store
+
+frontend/node_modules
+frontend/dist
+frontend/.vite
+
+backend/.pytest_cache
+backend/htmlcov
+
+screenshots
+img.png
