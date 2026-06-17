@@ -2,7 +2,7 @@
 
 > SmartCRM - De dados brutos de um e-commerce a decisões estratégicas de venda.
 
-🔗 **[Acesse o projeto na web](https)**
+🔗 **[Acesse o projeto na web](https://smartcrm-lime.vercel.app)**
 
 ---
 
