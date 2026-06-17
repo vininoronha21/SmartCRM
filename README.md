@@ -14,15 +14,9 @@ Desenvolvi o SmartCRM com a finalidade de pegar uma base de dados real e organiz
 
 A ideia é simples: analisar uma base de dados com foco em decisão e impacto de negócio, extraindo estratégias por meio de números e ações.
 
----
 
-## 📸 Preview
-
-### 💡 Light Mode
-<img src=screenshots/light-1.png width=800>
-
-### 🌙 Dark Mode
-<img src=screenshots/dark-1.png width=800>
+## 📸 Tela de Login
+<img src=screenshots/login.png width=800>
 
 ---
 
@@ -54,7 +48,7 @@ A ideia é simples: analisar uma base de dados com foco em decisão e impacto de
 
 ### 📝 Insights extraídos
 
-<img src=screenshots/light-5.png width=800>
+<img src=screenshots/light2.png width=800>
 
 - **97,02%** de conversão operacional: 96.478 de 99.441 pedidos chegaram a `delivered`.
 - Receita realizada superior a **R$ 15,4M** (apenas pedidos entregues).
@@ -64,7 +58,11 @@ A ideia é simples: analisar uma base de dados com foco em decisão e impacto de
 
 ### 🌙 Dark Mode
 
-<img src=screenshots/dark-mode-preview.gif width=800>
+<img src=screenshots/dark5.png width=800>
+
+---
+
+<img src=screenshots/dark2.png width=800>
 
 O dashboard suporta modo escuro com cores e contrastes ajustados para leitura confortável.
 
@@ -79,11 +77,19 @@ O dashboard suporta modo escuro com cores e contrastes ajustados para leitura co
 
 ### 📊 Visualizações dinâmicas e interativas
 
-<img src=screenshots/view.gif width=800>
+<img src=screenshots/light6.png width=800>
+
+---
+
+<img src=screenshots/light2.png width=800>
 
 ### 🎲 Reports com base de dados
 
-<img src=screenshots/light-3.png width=800> <img src=screenshots/light-4.png width=800>
+<img src=screenshots/light4.png width=800> 
+
+---
+
+<img src=screenshots/light5.png width=800>
 
 ### ⚪ Endpoints disponíveis
 
@@ -101,6 +107,8 @@ O dashboard suporta modo escuro com cores e contrastes ajustados para leitura co
 - React 19
 - Vite
 - Chart.js + react-chartjs-2
+- GSAP
+- lucide-react
 - HTML, CSS
 
 ---

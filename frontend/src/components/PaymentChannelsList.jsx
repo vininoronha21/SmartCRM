@@ -12,10 +12,10 @@ export function PaymentChannelsList({ data }) {
 
   return (
     <div className="payment-channel-list" aria-label="Canais de pagamento por pedidos">
-      {data.map((item) => {
+      {data.map((item, channelIndex) => {
         const percentage = (item.total_orders / totalOrders) * 100
         return (
-          <div className="payment-channel-row" key={item.payment_type}>
+          <div className="payment-channel-row" key={item.payment_type} style={{ '--channel-index': channelIndex }}>
             <span>{paymentLabels[item.payment_type] || item.payment_type}</span>
             <div className="payment-channel-track" aria-hidden="true">
               <span style={{ width: `${Math.max(percentage, 2)}%` }} />

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   PackageCheck,
   Tag,
@@ -6,6 +6,7 @@ import {
   UsersRound,
   XCircle,
 } from 'lucide-react'
+import { gsap } from 'gsap'
 
 import './App.css'
 import { buildAlerts, buildInsights } from './utils/insights'
@@ -15,6 +16,7 @@ import { ErrorState } from './components/DataStates'
 import { AlertsBanner } from './components/AlertsBanner'
 import { FunnelDonutChart } from './components/FunnelDonutChart'
 import { InsightBox } from './components/InsightBox'
+import { LoginPage } from './components/LoginPage'
 import { MetricCard } from './components/MetricCard'
 import { OperationsPanel } from './components/OperationsPanel'
 import { PaymentChannelsList } from './components/PaymentChannelsList'
@@ -40,7 +42,17 @@ const INITIAL_FILTERS = {
   endDate: '',
 }
 
-function App() {
+function navigateWithViewTransition(updateRoute) {
+  if (document.startViewTransition) {
+    document.startViewTransition(updateRoute)
+    return
+  }
+
+  updateRoute()
+}
+
+function DashboardPage({ onLogout, username }) {
+  const dashboardRef = useRef(null)
   const [filters, setFilters] = useState(INITIAL_FILTERS)
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -100,17 +112,61 @@ function App() {
   const tabTitle = activeTab === 'reports' ? 'Reports' : 'Dashboard'
   const hasLoadError = Boolean(error)
 
+  useLayoutEffect(() => {
+    const root = dashboardRef.current
+
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return undefined
+    }
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+
+      tl.from('[data-animate="sidebar"]', { x: -40, opacity: 0, duration: 0.6, clearProps: 'all' })
+        .from('[data-animate="dashboard-header"]', { y: -20, opacity: 0, duration: 0.5 }, '-=0.4')
+        .from('[data-animate="primary-kpi"] > *', {
+          y: 30,
+          opacity: 0,
+          stagger: 0.1,
+          duration: 0.6,
+          ease: 'back.out(1.2)'
+        }, '-=0.3')
+        .from('[data-animate="secondary-kpi"] > *', {
+          scale: 0.9,
+          opacity: 0,
+          stagger: 0.05,
+          duration: 0.5
+        }, '-=0.4')
+        .from('[data-animate="dashboard-panel"]', {
+          y: 40,
+          opacity: 0,
+          stagger: 0.08,
+          duration: 0.7
+        }, '-=0.3')
+        .from('[data-animate="insights-panel"]', { x: 40, opacity: 0, duration: 0.6 }, '-=0.5')
+        .from('[data-animate="seller-table"]', { y: 20, opacity: 0, scale: 0.98, duration: 0.45 }, '-=0.2')
+
+      gsap.from('.kpi-card-value', { opacity: 0, y: 15, stagger: 0.05, duration: 0.5, delay: 0.5 })
+      gsap.from('.kpi-sparkline', { opacity: 0, scaleX: 0, transformOrigin: 'left', duration: 0.8, delay: 0.7 })
+      gsap.from('.ops-item', { opacity: 0, x: 16, stagger: 0.08, duration: 0.4, delay: 0.9 })
+      gsap.from('.alert-row', { opacity: 0, x: 20, stagger: 0.1, duration: 0.4, delay: 1.0 })
+    }, root)
+
+    return () => ctx.revert()
+  }, [])
+
   function handleDismissAlert(alertId) {
     setDismissedAlerts((previousDismissed) => [...previousDismissed, alertId])
   }
 
   return (
-    <div className="app">
+    <div className="app" ref={dashboardRef} data-route-view="dashboard">
       <Sidebar
         activeTab={activeTab}
         isOpen={isSidebarOpen}
         onOpenAbout={() => setIsAboutOpen(true)}
         onSelectTab={setActiveTab}
+        username={username}
       />
 
       <AboutPanel
@@ -130,7 +186,9 @@ function App() {
           loading={loading || refreshing}
           onApplyFilters={setFilters}
           onClearFilters={() => setFilters(INITIAL_FILTERS)}
+          onLogout={onLogout}
           onRefresh={reload}
+          username={username}
         />
 
         <AlertsBanner
@@ -154,7 +212,7 @@ function App() {
           <>
             <div className="dashboard-shell">
               <div className="dashboard-workspace">
-                <section className="primary-kpi-grid" aria-live="polite">
+                <section className="primary-kpi-grid" aria-live="polite" data-animate="primary-kpi">
                   {loading ? (
                     Array.from({ length: 2 }, (_item, index) => (
                       <SkeletonCard key={index} />
@@ -162,6 +220,7 @@ function App() {
                   ) : (
                     <>
                       <MetricCard
+                        index={0}
                         label="Receita Total"
                         value={formatCurrency(totalRevenue)}
                         subtitle={filterLabel}
@@ -170,6 +229,7 @@ function App() {
                         sparklineValues={sparklineRevenue}
                       />
                       <MetricCard
+                        index={1}
                         label="Taxa de Conversão"
                         value={formatPercent(data.conversion.conversion_rate_pct)}
                         subtitle={`${formatNumber(data.conversion.delivered)} pedidos entregues`}
@@ -181,7 +241,7 @@ function App() {
                   )}
                 </section>
 
-                <section className="secondary-kpi-grid" aria-live="polite">
+                <section className="secondary-kpi-grid" aria-live="polite" data-animate="secondary-kpi">
               {loading ? (
                 Array.from({ length: 5 }, (_item, index) => (
                   <SkeletonCard key={index} />
@@ -189,6 +249,7 @@ function App() {
               ) : (
                 <>
                   <MetricCard
+                    index={2}
                     label="Total de Pedidos"
                     value={formatNumber(totalOrders)}
                     subtitle={filterLabel}
@@ -196,6 +257,7 @@ function App() {
                     icon={PackageCheck}
                   />
                   <MetricCard
+                    index={3}
                     label="Ticket Médio"
                     value={formatCurrency(ticketMedio)}
                     subtitle="Receita / pedidos"
@@ -203,6 +265,7 @@ function App() {
                     icon={TicketPercent}
                   />
                   <MetricCard
+                    index={4}
                     label="Sellers Ativos"
                     value={formatNumber(sellersAtivos)}
                     subtitle="Base top 50"
@@ -210,6 +273,7 @@ function App() {
                     icon={UsersRound}
                   />
                   <MetricCard
+                    index={5}
                     label="Cancelamentos"
                     value={formatNumber(canceledOrders)}
                     subtitle={`${formatPercent(canceledPct)} dos pedidos`}
@@ -217,6 +281,7 @@ function App() {
                     icon={XCircle}
                   />
                   <MetricCard
+                    index={6}
                     label="Categoria Líder"
                     value={categoriaLider}
                     subtitle={`${formatCurrency(categoriaLiderReceita)} · ${filterLabel}`}
@@ -229,12 +294,13 @@ function App() {
 
                 <section className="analytics-grid">
                   {loading ? (
-                    <SkeletonChart height={280} />
+                    <SkeletonChart height={280} dataAnimate="dashboard-panel" />
                   ) : (
                     <ChartCard
                       title="Receita ao longo do tempo"
                       size="lg"
                       className="span-7"
+                      dataAnimate="dashboard-panel"
                       action={<button type="button" className="chart-select">Diário</button>}
                     >
                       {hasLoadError ? (
@@ -246,12 +312,13 @@ function App() {
                   )}
 
                   {loading ? (
-                    <SkeletonChart />
+                    <SkeletonChart dataAnimate="dashboard-panel" />
                   ) : (
                     <ChartCard
                       title="Top 8 categorias por receita"
                       size="lg"
                       className="span-5"
+                      dataAnimate="dashboard-panel"
                       action={<button type="button" className="chart-select">Receita</button>}
                     >
                       {hasLoadError ? (
@@ -266,9 +333,9 @@ function App() {
                   )}
 
                   {loading ? (
-                    <SkeletonChart />
+                    <SkeletonChart dataAnimate="dashboard-panel" />
                   ) : (
-                    <ChartCard title="Funil de vendas por status" size="sm" className="span-4">
+                    <ChartCard title="Funil de vendas por status" size="sm" className="span-4" dataAnimate="dashboard-panel">
                       {hasLoadError ? (
                         <ErrorState onRetry={reload} />
                       ) : (
@@ -278,9 +345,9 @@ function App() {
                   )}
 
                   {loading ? (
-                    <SkeletonChart />
+                    <SkeletonChart dataAnimate="dashboard-panel" />
                   ) : (
-                    <ChartCard title="Distribuição de pagamentos" size="sm" className="span-4">
+                    <ChartCard title="Distribuição de pagamentos" size="sm" className="span-4" dataAnimate="dashboard-panel">
                       {hasLoadError ? (
                         <ErrorState onRetry={reload} />
                       ) : (
@@ -290,9 +357,9 @@ function App() {
                   )}
 
                   {loading ? (
-                    <SkeletonChart />
+                    <SkeletonChart dataAnimate="dashboard-panel" />
                   ) : (
-                    <ChartCard title="Canais de pagamento" size="sm" className="span-4">
+                    <ChartCard title="Canais de pagamento" size="sm" className="span-4" dataAnimate="dashboard-panel">
                       {hasLoadError ? (
                         <ErrorState onRetry={reload} />
                       ) : (
@@ -302,12 +369,13 @@ function App() {
                   )}
 
                   {loading ? (
-                    <SkeletonChart height={320} />
+                    <SkeletonChart height={320} dataAnimate="seller-table" />
                   ) : (
                     <ChartCard
                       title="Top sellers por receita"
                       size="table"
                       className="span-12"
+                      dataAnimate="seller-table"
                     >
                       {hasLoadError ? (
                         <ErrorState onRetry={reload} />
@@ -333,6 +401,39 @@ function App() {
       </main>
     </div>
   )
+}
+
+function App() {
+  const [route, setRoute] = useState('login')
+  const [username, setUsername] = useState('')
+
+  function handleLogin(username) {
+    navigateWithViewTransition(() => {
+      setUsername(username)
+      setRoute('dashboard')
+    })
+  }
+
+  function handleLogout() {
+    const updateRoute = () => {
+      setRoute('login')
+      setUsername('')
+    }
+
+    if (document.startViewTransition) {
+      navigateWithViewTransition(updateRoute)
+      return
+    }
+
+    document.querySelector('[data-route-view="dashboard"]')?.classList.add('route-exiting')
+    window.setTimeout(updateRoute, 170)
+  }
+
+  if (route === 'login') {
+    return <LoginPage onLogin={handleLogin} />
+  }
+
+  return <DashboardPage onLogout={handleLogout} username={username} />
 }
 
 export default App
