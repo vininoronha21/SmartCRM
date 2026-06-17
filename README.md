@@ -107,6 +107,8 @@ O dashboard suporta modo escuro com cores e contrastes ajustados para leitura co
 - React 19
 - Vite
 - Chart.js + react-chartjs-2
+- GSAP
+- lucide-react
 - HTML, CSS
 
 ---
