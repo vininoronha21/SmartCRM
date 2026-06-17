@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useLayoutEffect } from 'react'
 import {
   BarChart3,
   LineChart,
@@ -6,6 +6,63 @@ import {
   User,
   UsersRound,
 } from 'lucide-react'
+import gsap from 'gsap'
+
+function AnimatedNumber({ value, type = 'number' }) {
+  const [currentVal, setCurrentVal] = useState(0)
+
+  useLayoutEffect(() => {
+    let numericVal = 0
+    if (type === 'currency') {
+      numericVal = parseFloat(value.replace(/\./g, '').replace(',', '.'))
+    } else if (type === 'percent') {
+      numericVal = parseFloat(value.replace(',', '.'))
+    } else {
+      numericVal = parseInt(value, 10)
+    }
+
+    if (isNaN(numericVal)) return
+
+    const obj = { val: 0 }
+    const ctx = gsap.context(() => {
+      gsap.to(obj, {
+        val: numericVal,
+        duration: 3,
+        ease: 'power3.out',
+        delay: 0.3,
+        onUpdate: () => {
+          setCurrentVal(obj.val)
+        },
+      })
+    })
+
+    return () => ctx.revert()
+  }, [value, type])
+
+  if (type === 'currency') {
+    return (
+      <>
+        R${' '}
+        {currentVal.toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
+      </>
+    )
+  }
+  if (type === 'percent') {
+    return (
+      <>
+        {currentVal.toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
+        %
+      </>
+    )
+  }
+  return <>{Math.round(currentVal)}</>
+}
 
 function LogoMark({ className = '' }) {
   return <span className={`login-logo-mark ${className}`.trim()} aria-hidden="true" />
@@ -111,7 +168,7 @@ export function LoginPage({ onLogin }) {
               ].map(([label, value, width]) => (
                 <span key={label}>
                   <small>{label}</small>
-                  <strong>{value}</strong>
+                  <strong><AnimatedNumber value={value} /></strong>
                   <i style={{ width }} />
                 </span>
               ))}
@@ -120,7 +177,7 @@ export function LoginPage({ onLogin }) {
 
           <PreviewCard className="revenue-card" delay="40ms">
             <h2>Receita total</h2>
-            <strong>R$ 15.422.461,77</strong>
+            <strong><AnimatedNumber value="15.422.461,77" type="currency" /></strong>
             <small>+18,6% vs período anterior</small>
             <svg viewBox="0 0 160 54" role="img" aria-label="Tendência de receita">
               <polyline
@@ -136,7 +193,7 @@ export function LoginPage({ onLogin }) {
 
           <PreviewCard className="conversion-card" delay="60ms">
             <h2>Taxa de conversão</h2>
-            <strong>97,02%</strong>
+            <strong><AnimatedNumber value="97,02" type="percent" /></strong>
             <small>+2,7 p.p. vs período anterior</small>
             <svg viewBox="0 0 160 54" role="img" aria-label="Tendência de conversão">
               <polyline

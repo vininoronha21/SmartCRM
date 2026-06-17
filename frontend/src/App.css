@@ -65,6 +65,17 @@
   padding: 72px clamp(44px, 8vw, 150px) 88px;
 }
 
+@keyframes loginGlowPulse {
+  0%, 100% {
+    text-shadow: 0 0 15px rgba(109, 58, 178, 0.1);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 35px var(--color-primary);
+    transform: scale(1.02);
+  }
+}
+
 .login-brand {
   display: flex;
   align-items: center;
@@ -73,6 +84,9 @@
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 0;
+  color: var(--color-primary);
+  animation: loginGlowPulse 4s ease-in-out infinite;
+  transform-origin: left center;
 }
 
 .login-logo-mark {
