@@ -59,7 +59,11 @@ export function OperationsPanel({
   const targetAchievement = hasTarget ? (revenue / target) * 100 : 0
 
   return (
-    <aside className="operations-panel" aria-label="Insights operacionais">
+    <aside
+      className="operations-panel"
+      aria-label="Insights operacionais"
+      data-animate="insights-panel"
+    >
       <PanelSection title="Insights e recomendações">
         <InsightItem
           icon={CheckCircle2}

@@ -5,6 +5,7 @@ import { KpiSparkline } from './KpiSparkline'
 export function MetricCard({
   change,
   icon: Icon,
+  index = 0,
   label,
   size = 'secondary',
   sparklineValues = [],
@@ -17,7 +18,10 @@ export function MetricCard({
   const changeTone = change ? (isNegative ? 'negative' : 'positive') : ''
 
   return (
-    <article className={`kpi-card kpi-card-${size} tone-${tone}`}>
+    <article
+      className={`kpi-card kpi-card-${size} tone-${tone}`}
+      style={{ '--card-index': index }}
+    >
       <div className="kpi-card-head">
         <p className="kpi-card-label">{label}</p>
         {isPrimary ? (
@@ -33,7 +37,7 @@ export function MetricCard({
           </p>
         </div>
         {isPrimary ? (
-          <KpiSparkline values={sparklineValues} color="var(--color-primary)" />
+          <KpiSparkline values={sparklineValues} color={`var(--metric-${tone}, var(--color-primary))`} />
         ) : (
           Icon ? (
             <span className="kpi-icon" aria-hidden="true">

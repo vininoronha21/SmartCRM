@@ -14,9 +14,9 @@ export function SkeletonCard() {
   )
 }
 
-export function SkeletonChart({ height = 220 }) {
+export function SkeletonChart({ dataAnimate, height = 220 }) {
   return (
-    <div className="chart-card" aria-hidden="true">
+    <div className="chart-card" aria-hidden="true" data-animate={dataAnimate}>
       <div
         className="skeleton"
         style={{ height: 16, width: '40%', marginBottom: 16 }}

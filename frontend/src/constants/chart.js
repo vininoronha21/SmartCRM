@@ -28,7 +28,7 @@ export const chartColors = {
   invoicedHover: '#0D7D5C',
   darkPalette: [
     '#A783DC',
-    '#8C78B8',
+    '#4DA6FF',
     '#34D399',
     '#F5BC4A',
     '#F47A6E',
@@ -36,7 +36,7 @@ export const chartColors = {
   ],
   darkPaletteHover: [
     '#C0A5E7',
-    '#A391C8',
+    '#73B9FF',
     '#5EE6B7',
     '#FFD174',
     '#FF9A91',

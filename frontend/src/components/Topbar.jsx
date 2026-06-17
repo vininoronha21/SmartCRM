@@ -11,6 +11,16 @@ import { formatDateTime } from '../utils/formatters'
 import { DateFilter } from './DateFilter'
 import { ThemeToggle } from './ThemeToggle'
 
+function getInitials(name) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+  }
+
+  return name.slice(0, 2).toUpperCase()
+}
+
 export function Topbar({
   title = 'Dashboard',
   filters,
@@ -20,14 +30,17 @@ export function Topbar({
   sidebarOpen,
   onApplyFilters,
   onClearFilters,
+  onLogout,
   onRefresh,
   onToggleSidebar,
   onToggleTheme,
+  username = 'Ana Duarte',
 }) {
   const formattedLastUpdate = formatDateTime(lastUpdatedAt)
+  const initials = getInitials(username)
 
   return (
-    <header className="topbar">
+    <header className="topbar" data-animate="dashboard-header">
       <div className="topbar-heading">
         <button
           type="button"
@@ -93,7 +106,15 @@ export function Topbar({
           <span className="notification-dot" aria-hidden="true" />
         </button>
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-        <div className="topbar-avatar" aria-label="Usuário Ana Duarte">AD</div>
+        <button
+          type="button"
+          className="topbar-avatar"
+          onClick={onLogout}
+          aria-label="Sair do SmartCRM"
+          title="Sair"
+        >
+          {initials}
+        </button>
       </div>
     </header>
   )
