@@ -25,3 +25,5 @@ data/
 __pycache__/
 agents/
 .ide
+.idea
+
