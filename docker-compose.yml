@@ -1,26 +1,57 @@
 services:
-
   db:
     image: postgres:15
-
     container_name: smartcrm_db
-
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-
+      POSTGRES_USER: ${DB_USER:-smartcrm_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-smartcrm_pass}
+      POSTGRES_DB: ${DB_NAME:-smartcrm_db}
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-smartcrm_user} -d ${DB_NAME:-smartcrm_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: smartcrm_api
+    environment:
+      DATABASE_URL: postgresql+psycopg://${DB_USER:-smartcrm_user}:${DB_PASSWORD:-smartcrm_pass}@db:5432/${DB_NAME:-smartcrm_db}
+      DEBUG: ${DEBUG:-False}
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  load-data:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: smartcrm_load_data
+    profiles:
+      - load
+    environment:
+      DATABASE_URL: postgresql+psycopg://${DB_USER:-smartcrm_user}:${DB_PASSWORD:-smartcrm_pass}@db:5432/${DB_NAME:-smartcrm_db}
+      DEBUG: ${DEBUG:-False}
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "app.etl.load_with_schema"]
+    restart: "no"
 
 volumes:
   postgres_data:

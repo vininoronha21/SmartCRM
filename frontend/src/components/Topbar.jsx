@@ -1,3 +1,11 @@
+import {
+  Bell,
+  Download,
+  Menu,
+  RefreshCcw,
+  SlidersHorizontal,
+} from 'lucide-react'
+
 import { formatDateTime } from '../utils/formatters'
 
 import { DateFilter } from './DateFilter'
@@ -28,7 +36,7 @@ export function Topbar({
           aria-label={sidebarOpen ? 'Ocultar barra lateral' : 'Mostrar barra lateral'}
           title={sidebarOpen ? 'Ocultar barra lateral' : 'Mostrar barra lateral'}
         >
-          ☰
+          <Menu size={17} aria-hidden="true" />
         </button>
         <div>
           <h1 className="page-title">{title}</h1>
@@ -50,13 +58,42 @@ export function Topbar({
         />
         <button
           type="button"
-          className="refresh-btn"
+          className="topbar-icon-btn refresh-btn"
           onClick={onRefresh}
           disabled={loading}
+          aria-label={loading ? 'Atualizando dados' : 'Atualizar dados'}
+          title={loading ? 'Atualizando dados' : 'Atualizar dados'}
         >
-          {loading ? 'Atualizando...' : 'Atualizar'}
+          <RefreshCcw size={15} aria-hidden="true" className={loading ? 'spin' : ''} />
+          <span>{loading ? 'Atualizando' : 'Atualizar'}</span>
+        </button>
+        <button
+          type="button"
+          className="topbar-icon-btn"
+          onClick={() => document.querySelector('.filter-input')?.focus()}
+        >
+          <SlidersHorizontal size={15} aria-hidden="true" />
+          <span>Filtros</span>
+        </button>
+        <button
+          type="button"
+          className="topbar-icon-btn"
+          onClick={() => window.print()}
+        >
+          <Download size={15} aria-hidden="true" />
+          <span>Exportar</span>
+        </button>
+        <button
+          type="button"
+          className="notification-btn"
+          aria-label="Abrir notificações"
+          title="Notificações"
+        >
+          <Bell size={18} aria-hidden="true" />
+          <span className="notification-dot" aria-hidden="true" />
         </button>
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        <div className="topbar-avatar" aria-label="Usuário Ana Duarte">AD</div>
       </div>
     </header>
   )
