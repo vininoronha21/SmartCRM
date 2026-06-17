@@ -27,3 +27,6 @@ indent-style = "space"
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
 addopts = "-q --disable-warnings --maxfail=1"
+
+[tool.vercel]
+entrypoint = "backend.app.main:app"
