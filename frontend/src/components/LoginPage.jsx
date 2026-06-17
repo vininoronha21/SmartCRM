@@ -99,6 +99,20 @@ export function LoginPage({ onLogin }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const pageRef = useRef(null)
 
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.login-story > *, .login-card > *', {
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.08,
+        ease: 'power3.out',
+        clearProps: 'all',
+      })
+    }, pageRef)
+    return () => ctx.revert()
+  }, [])
+
   function handleSubmit(event) {
     event.preventDefault()
     const trimmedUsername = username.trim()
@@ -220,10 +234,6 @@ export function LoginPage({ onLogin }) {
           </PreviewCard>
         </div>
 
-        <p className="login-security" data-login-preview style={{ '--exit-delay': '100ms' }}>
-          <ShieldCheck size={18} aria-hidden="true" />
-          Segurança e confiabilidade para proteger seus dados
-        </p>
       </section>
 
       <section className="login-access" aria-label="Acessar SmartCRM">
@@ -251,8 +261,6 @@ export function LoginPage({ onLogin }) {
           <button type="submit" className="login-submit" disabled={!username.trim() || isSubmitting}>
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </button>
-
-          <small>Sem senha neste protótipo</small>
         </form>
       </section>
 
