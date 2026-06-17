@@ -124,6 +124,31 @@ requirements.txt     # Dependências
 cd backend && python -m pytest tests/ -v
 ```
 
+## 🐳 Docker: API, banco e carga de dados
+
+Suba o PostgreSQL e carregue os CSVs pelo container `load-data`:
+
+```bash
+docker compose build api load-data
+docker compose --profile load up load-data
+```
+
+Depois, mantenha a API online em `http://localhost:8000`:
+
+```bash
+docker compose up -d api
+```
+
+Checks rápidos:
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/api/v1/revenue
+```
+
+Observação: o loader pula tabelas que já possuem dados. Para recarregar do zero,
+remova o volume `postgres_data` antes de rodar a carga novamente.
+
 ---
 
 ## Licença

@@ -1,4 +1,11 @@
 import { useMemo, useState } from 'react'
+import {
+  PackageCheck,
+  Tag,
+  TicketPercent,
+  UsersRound,
+  XCircle,
+} from 'lucide-react'
 
 import './App.css'
 import { buildAlerts, buildInsights } from './utils/insights'
@@ -7,17 +14,16 @@ import { ChartCard } from './components/ChartCard'
 import { ErrorState } from './components/DataStates'
 import { AlertsBanner } from './components/AlertsBanner'
 import { FunnelDonutChart } from './components/FunnelDonutChart'
-import { FunnelTrendLineChart } from './components/FunnelTrendLineChart'
 import { InsightBox } from './components/InsightBox'
 import { MetricCard } from './components/MetricCard'
+import { OperationsPanel } from './components/OperationsPanel'
+import { PaymentChannelsList } from './components/PaymentChannelsList'
 import { PaymentPieChart } from './components/PaymentPieChart'
-import { PaymentRevenueBarChart } from './components/PaymentRevenueBarChart'
 import { ReportsPanel } from './components/ReportsPanel'
 import { RevenueChart } from './components/RevenueChart'
 import { Sidebar } from './components/Sidebar'
 import { SkeletonCard, SkeletonChart } from './components/Skeletons'
 import { TopCategoriesBarChart } from './components/TopCategoriesBarChart'
-import { TopProductsTable } from './components/TopProductsTable'
 import { TopSellersTable } from './components/TopSellersTable'
 import { Topbar } from './components/Topbar'
 import { useDashboardData } from './hooks/useDashboardData'
@@ -61,8 +67,14 @@ function App() {
   }, [data.topSellersExtended])
 
   const categoriaLider = data.topProductsExtended[0]?.category || 'Sem dados'
+  const categoriaLiderReceita = data.topProductsExtended[0]?.total_revenue || 0
 
   const canceledPct = totalOrders > 0 ? (canceledOrders / totalOrders) * 100 : 0
+  const sparklineRevenue = data.revenueTimeline.map((item) => item.totalRevenue)
+  const sparklineConversion = Array.from(
+    { length: Math.max(sparklineRevenue.length, 2) },
+    () => data.conversion.conversion_rate_pct,
+  )
 
   const alerts = useMemo(
     () =>
@@ -140,174 +152,182 @@ function App() {
           </>
         ) : (
           <>
-            <section className="kpi-grid" aria-live="polite">
+            <div className="dashboard-shell">
+              <div className="dashboard-workspace">
+                <section className="primary-kpi-grid" aria-live="polite">
+                  {loading ? (
+                    Array.from({ length: 2 }, (_item, index) => (
+                      <SkeletonCard key={index} />
+                    ))
+                  ) : (
+                    <>
+                      <MetricCard
+                        label="Receita Total"
+                        value={formatCurrency(totalRevenue)}
+                        subtitle={filterLabel}
+                        tone="revenue"
+                        size="primary"
+                        sparklineValues={sparklineRevenue}
+                      />
+                      <MetricCard
+                        label="Taxa de Conversão"
+                        value={formatPercent(data.conversion.conversion_rate_pct)}
+                        subtitle={`${formatNumber(data.conversion.delivered)} pedidos entregues`}
+                        tone="conversion"
+                        size="primary"
+                        sparklineValues={sparklineConversion}
+                      />
+                    </>
+                  )}
+                </section>
+
+                <section className="secondary-kpi-grid" aria-live="polite">
               {loading ? (
-                Array.from({ length: 7 }, (_item, index) => (
+                Array.from({ length: 5 }, (_item, index) => (
                   <SkeletonCard key={index} />
                 ))
               ) : (
                 <>
                   <MetricCard
-                    label="Receita Total"
-                    value={formatCurrency(totalRevenue)}
-                    subtitle={filterLabel}
-                    tone="revenue"
-                  />
-                  <MetricCard
                     label="Total de Pedidos"
                     value={formatNumber(totalOrders)}
                     subtitle={filterLabel}
                     tone="orders"
-                  />
-                  <MetricCard
-                    label="Taxa de Conversão"
-                    value={formatPercent(data.conversion.conversion_rate_pct)}
-                    subtitle={`${formatNumber(data.conversion.delivered)} pedidos entregues`}
-                    tone="conversion"
-                  />
-                  <MetricCard
-                    label="Pedidos Cancelados"
-                    value={formatNumber(canceledOrders)}
-                    subtitle={filterLabel}
-                    tone="canceled"
+                    icon={PackageCheck}
                   />
                   <MetricCard
                     label="Ticket Médio"
                     value={formatCurrency(ticketMedio)}
                     subtitle="Receita / pedidos"
                     tone="ticket"
+                    icon={TicketPercent}
                   />
                   <MetricCard
                     label="Sellers Ativos"
                     value={formatNumber(sellersAtivos)}
                     subtitle="Base top 50"
                     tone="sellers"
+                    icon={UsersRound}
+                  />
+                  <MetricCard
+                    label="Cancelamentos"
+                    value={formatNumber(canceledOrders)}
+                    subtitle={`${formatPercent(canceledPct)} dos pedidos`}
+                    tone="canceled"
+                    icon={XCircle}
                   />
                   <MetricCard
                     label="Categoria Líder"
                     value={categoriaLider}
-                    subtitle="Maior receita"
+                    subtitle={`${formatCurrency(categoriaLiderReceita)} · ${filterLabel}`}
                     tone="leader"
+                    icon={Tag}
                   />
                 </>
               )}
             </section>
 
-            <InsightBox text={insights.overview} />
-
-            <section className="chart-grid">
-              {loading ? (
-                <SkeletonChart />
-              ) : (
-                <ChartCard title="Funil de Vendas por Status" size="sm">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
+                <section className="analytics-grid">
+                  {loading ? (
+                    <SkeletonChart height={280} />
                   ) : (
-                    <FunnelDonutChart data={data.funnel} theme={theme} />
+                    <ChartCard
+                      title="Receita ao longo do tempo"
+                      size="lg"
+                      className="span-7"
+                      action={<button type="button" className="chart-select">Diário</button>}
+                    >
+                      {hasLoadError ? (
+                        <ErrorState onRetry={reload} />
+                      ) : (
+                        <RevenueChart data={data.revenueTimeline} theme={theme} />
+                      )}
+                    </ChartCard>
                   )}
-                </ChartCard>
-              )}
 
-              {loading ? (
-                <SkeletonChart />
-              ) : (
-                <ChartCard title="Distribuição de Pagamentos" size="sm">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
+                  {loading ? (
+                    <SkeletonChart />
                   ) : (
-                    <PaymentPieChart data={data.paymentDistribution} theme={theme} />
+                    <ChartCard
+                      title="Top 8 categorias por receita"
+                      size="lg"
+                      className="span-5"
+                      action={<button type="button" className="chart-select">Receita</button>}
+                    >
+                      {hasLoadError ? (
+                        <ErrorState onRetry={reload} />
+                      ) : (
+                        <TopCategoriesBarChart
+                          data={data.topCategoriesByRevenue}
+                          theme={theme}
+                        />
+                      )}
+                    </ChartCard>
                   )}
-                </ChartCard>
-              )}
-            </section>
 
-            <section className="chart-grid">
-              {loading ? (
-                <SkeletonChart />
-              ) : (
-                <ChartCard title="Top 8 Categorias por Receita" size="sm">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
+                  {loading ? (
+                    <SkeletonChart />
                   ) : (
-                    <TopCategoriesBarChart
-                      data={data.topCategoriesByRevenue}
-                      theme={theme}
-                    />
+                    <ChartCard title="Funil de vendas por status" size="sm" className="span-4">
+                      {hasLoadError ? (
+                        <ErrorState onRetry={reload} />
+                      ) : (
+                        <FunnelDonutChart data={data.funnel} theme={theme} />
+                      )}
+                    </ChartCard>
                   )}
-                </ChartCard>
-              )}
 
-              {loading ? (
-                <SkeletonChart />
-              ) : (
-                <ChartCard title="Receita por Tipo de Pagamento" size="sm">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
+                  {loading ? (
+                    <SkeletonChart />
                   ) : (
-                    <PaymentRevenueBarChart
-                      data={data.paymentDistribution}
-                      theme={theme}
-                    />
+                    <ChartCard title="Distribuição de pagamentos" size="sm" className="span-4">
+                      {hasLoadError ? (
+                        <ErrorState onRetry={reload} />
+                      ) : (
+                        <PaymentPieChart data={data.paymentDistribution} theme={theme} />
+                      )}
+                    </ChartCard>
                   )}
-                </ChartCard>
-              )}
-            </section>
 
-            <InsightBox text={insights.commerce} />
-
-            <section className="chart-grid">
-              {loading ? (
-                <SkeletonChart height={280} />
-              ) : (
-                <ChartCard title="Receita ao Longo do Tempo" size="lg">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
+                  {loading ? (
+                    <SkeletonChart />
                   ) : (
-                    <RevenueChart data={data.revenueTimeline} theme={theme} />
+                    <ChartCard title="Canais de pagamento" size="sm" className="span-4">
+                      {hasLoadError ? (
+                        <ErrorState onRetry={reload} />
+                      ) : (
+                        <PaymentChannelsList data={data.paymentDistribution} />
+                      )}
+                    </ChartCard>
                   )}
-                </ChartCard>
-              )}
 
-              {loading ? (
-                <SkeletonChart height={280} />
-              ) : (
-                <ChartCard title="Tendência do Funil (Simulada)" size="lg">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
+                  {loading ? (
+                    <SkeletonChart height={320} />
                   ) : (
-                    <FunnelTrendLineChart data={data.funnel} theme={theme} />
+                    <ChartCard
+                      title="Top sellers por receita"
+                      size="table"
+                      className="span-12"
+                    >
+                      {hasLoadError ? (
+                        <ErrorState onRetry={reload} />
+                      ) : (
+                        <TopSellersTable rows={data.topSellers} />
+                      )}
+                    </ChartCard>
                   )}
-                </ChartCard>
-              )}
-            </section>
+                </section>
+              </div>
 
-            <section className="chart-grid">
-              {loading ? (
-                <SkeletonChart height={320} />
-              ) : (
-                <ChartCard title="Top 10 Sellers" size="table">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
-                  ) : (
-                    <TopSellersTable rows={data.topSellers} />
-                  )}
-                </ChartCard>
-              )}
-
-              {loading ? (
-                <SkeletonChart height={320} />
-              ) : (
-                <ChartCard title="Top 10 Categorias" size="table">
-                  {hasLoadError ? (
-                    <ErrorState onRetry={reload} />
-                  ) : (
-                    <TopProductsTable rows={data.topProducts} />
-                  )}
-                </ChartCard>
-              )}
-            </section>
-
-            <InsightBox text={insights.portfolio} />
+              <OperationsPanel
+                canceledOrders={canceledOrders}
+                canceledPct={canceledPct}
+                category={categoriaLider}
+                deliveredOrders={data.conversion.delivered}
+                revenue={totalRevenue}
+                target={0}
+              />
+            </div>
           </>
         )}
       </main>
