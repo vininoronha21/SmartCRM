@@ -27,3 +27,4 @@ agents/
 .ide
 .idea/
 *.iml
+.ruff_cache/
