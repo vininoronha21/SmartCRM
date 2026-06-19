@@ -157,6 +157,12 @@ curl http://localhost:8000/api/v1/revenue
 Observação: o loader pula tabelas que já possuem dados. Para recarregar do zero,
 remova o volume `postgres_data` antes de rodar a carga novamente.
 
+## 🚀 Produção sem Docker local
+
+Para manter o dashboard publicado funcionando com sua máquina desligada, use um
+PostgreSQL gerenciado e uma API FastAPI hospedada. Veja o guia:
+[Deploy de produção](docs/deploy-production.md).
+
 ---
 
 ## Licença

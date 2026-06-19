@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.config import get_cors_origins
 from app.database import engine
 from app.models import Base
 from app.routers import analytics
@@ -14,7 +15,7 @@ Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # em produção, substitua pela URL do frontend no Render
+    allow_origins=get_cors_origins(),
     allow_methods=["GET"],
     allow_headers=["*"],
 )
