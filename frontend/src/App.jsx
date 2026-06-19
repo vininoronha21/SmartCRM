@@ -215,7 +215,7 @@ function DashboardPage({ onLogout, username }) {
                 <section className="primary-kpi-grid" aria-live="polite" data-animate="primary-kpi">
                   {loading ? (
                     Array.from({ length: 2 }, (_item, index) => (
-                      <SkeletonCard key={index} />
+                      <SkeletonCard key={index} size="primary" />
                     ))
                   ) : (
                     <>
@@ -294,7 +294,11 @@ function DashboardPage({ onLogout, username }) {
 
                 <section className="analytics-grid">
                   {loading ? (
-                    <SkeletonChart height={280} dataAnimate="dashboard-panel" />
+                    <SkeletonChart
+                      className="span-7"
+                      height={280}
+                      dataAnimate="dashboard-panel"
+                    />
                   ) : (
                     <ChartCard
                       title="Receita ao longo do tempo"
@@ -312,7 +316,7 @@ function DashboardPage({ onLogout, username }) {
                   )}
 
                   {loading ? (
-                    <SkeletonChart dataAnimate="dashboard-panel" />
+                    <SkeletonChart className="span-5" dataAnimate="dashboard-panel" />
                   ) : (
                     <ChartCard
                       title="Top 8 categorias por receita"
@@ -333,7 +337,7 @@ function DashboardPage({ onLogout, username }) {
                   )}
 
                   {loading ? (
-                    <SkeletonChart dataAnimate="dashboard-panel" />
+                    <SkeletonChart className="span-4" dataAnimate="dashboard-panel" />
                   ) : (
                     <ChartCard title="Funil de vendas por status" size="sm" className="span-4" dataAnimate="dashboard-panel">
                       {hasLoadError ? (
@@ -345,7 +349,7 @@ function DashboardPage({ onLogout, username }) {
                   )}
 
                   {loading ? (
-                    <SkeletonChart dataAnimate="dashboard-panel" />
+                    <SkeletonChart className="span-4" dataAnimate="dashboard-panel" />
                   ) : (
                     <ChartCard title="Distribuição de pagamentos" size="sm" className="span-4" dataAnimate="dashboard-panel">
                       {hasLoadError ? (
@@ -357,7 +361,7 @@ function DashboardPage({ onLogout, username }) {
                   )}
 
                   {loading ? (
-                    <SkeletonChart dataAnimate="dashboard-panel" />
+                    <SkeletonChart className="span-4" dataAnimate="dashboard-panel" />
                   ) : (
                     <ChartCard title="Canais de pagamento" size="sm" className="span-4" dataAnimate="dashboard-panel">
                       {hasLoadError ? (
@@ -369,7 +373,11 @@ function DashboardPage({ onLogout, username }) {
                   )}
 
                   {loading ? (
-                    <SkeletonChart height={320} dataAnimate="seller-table" />
+                    <SkeletonChart
+                      className="span-12"
+                      height={320}
+                      dataAnimate="seller-table"
+                    />
                   ) : (
                     <ChartCard
                       title="Top sellers por receita"

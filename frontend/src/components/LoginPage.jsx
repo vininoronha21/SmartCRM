@@ -2,7 +2,6 @@ import { useRef, useState, useLayoutEffect } from 'react'
 import {
   BarChart3,
   LineChart,
-  ShieldCheck,
   User,
   UsersRound,
 } from 'lucide-react'

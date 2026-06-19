@@ -1,6 +1,6 @@
-export function SkeletonCard() {
+export function SkeletonCard({ size = 'secondary' }) {
   return (
-    <div className="kpi-card" aria-hidden="true">
+    <div className={`kpi-card kpi-card-${size}`} aria-hidden="true">
       <div
         className="skeleton"
         style={{ height: 12, width: '60%', marginBottom: 12 }}
@@ -14,9 +14,13 @@ export function SkeletonCard() {
   )
 }
 
-export function SkeletonChart({ dataAnimate, height = 220 }) {
+export function SkeletonChart({ className = '', dataAnimate, height = 220 }) {
   return (
-    <div className="chart-card" aria-hidden="true" data-animate={dataAnimate}>
+    <div
+      className={`chart-card ${className}`.trim()}
+      aria-hidden="true"
+      data-animate={dataAnimate}
+    >
       <div
         className="skeleton"
         style={{ height: 16, width: '40%', marginBottom: 16 }}
