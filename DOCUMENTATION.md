@@ -1,7 +1,7 @@
 # SmartCRM - Technical Documentation
 
 **Version:** 0.1.0    
-**Last Updated:** 2026-06-17
+**Last Updated:** 2026-06-19
 
 ---
 
@@ -80,9 +80,12 @@
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
-| Database | PostgreSQL | 15 |
-| Containerization | Docker | Latest |
-| Orchestration | Docker Compose | Latest |
+| Production Database | Neon PostgreSQL | Managed |
+| Production API Hosting | Render Web Service | Free Web Service |
+| Production Frontend Hosting | Vercel | Static Build |
+| Local Database | PostgreSQL | 15 |
+| Local Containerization | Docker | Latest |
+| Local Orchestration | Docker Compose | Latest |
 | Environment Config | python-dotenv | 1.0.1 |
 
 ### Development Tools
@@ -100,6 +103,29 @@
 ## Architecture
 
 ### System Overview
+
+Production deployment:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Vercel Frontend                          │
+│              React + Vite static dashboard                  │
+│              VITE_API_BASE_URL -> Render /api/v1            │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ HTTPS/REST
+┌──────────────────────▼──────────────────────────────────────┐
+│                    Render FastAPI API                       │
+│              https://smartcrm-api-w95l.onrender.com         │
+│              /health and /api/v1/* endpoints                │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ SQLAlchemy + psycopg
+┌──────────────────────▼──────────────────────────────────────┐
+│                    Neon PostgreSQL                          │
+│              Managed production database                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Local development can still run PostgreSQL and the API through Docker Compose:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -273,14 +299,13 @@ SmartCRM/
 │   └── sellers_dataset.csv
 │
 ├── docker-compose.yml              # Docker composition for local development
+├── render.yaml                     # Render Blueprint for production API
 ├── requirements.txt                # Python dependencies
 ├── pyproject.toml                  # Project configuration (Ruff, pytest)
 ├── README.md                       # Project overview (Portuguese)
 ├── DOCUMENTATION.md                # This file
 ├── LICENSE                         # Project license
 ├── settings.json                   # Application settings
-└── agents/
-    └── agents.md                   # AI agent guidelines
 ```
 
 ---
@@ -425,7 +450,8 @@ http://localhost:8000/api/v1
 ```
 
 ### Authentication
-Currently, the API uses simple session-based authentication. Protected endpoints verify user authentication via session tokens.
+The current backend API does not enforce authentication. The login experience is
+implemented in the frontend UI layer.
 
 ### Response Format
 All endpoints return JSON with the following structure:
@@ -434,8 +460,9 @@ All endpoints return JSON with the following structure:
 ```json
 {
   "data": { /* endpoint-specific data */ },
-  "status": "success",
-  "timestamp": "2026-06-17T10:30:00Z"
+  "meta": {
+    "generated_at": "2026-06-19T10:30:00+00:00"
+  }
 }
 ```
 
@@ -450,140 +477,127 @@ All endpoints return JSON with the following structure:
 
 ### Endpoints
 
-#### 1. Get Dashboard Summary
+#### 1. Get Sales Funnel
 ```
-GET /analytics/dashboard
+GET /api/v1/funnel
 Query Parameters:
-  - start_date: string (ISO 8601: YYYY-MM-DD)
-  - end_date: string (ISO 8601: YYYY-MM-DD)
+  - start_date: string (optional, YYYY-MM-DD)
+  - end_date: string (optional, YYYY-MM-DD)
 
 Response:
 {
-  "total_revenue": float,
-  "total_orders": integer,
-  "conversion_rate": float,
-  "average_order_value": float,
-  "cancellation_rate": float,
-  "active_sellers": integer,
-  "top_category": string,
-  "payment_distribution": {}
+  "data": [
+    { "status": "delivered", "total": integer },
+    { "status": "shipped", "total": integer },
+    { "status": "canceled", "total": integer }
+  ],
+  "meta": { "generated_at": string }
 }
 ```
 
-#### 2. Get Sales Funnel
+#### 2. Get Conversion Rate
 ```
-GET /analytics/funnel
+GET /api/v1/conversion-rate
 Query Parameters:
-  - start_date: string
-  - end_date: string
+  - start_date: string (optional, YYYY-MM-DD)
+  - end_date: string (optional, YYYY-MM-DD)
 
 Response:
 {
-  "funnel": [
-    { "status": "created", "count": integer },
-    { "status": "approved", "count": integer },
-    { "status": "shipped", "count": integer },
-    { "status": "delivered", "count": integer },
-    { "status": "canceled", "count": integer }
-  ]
+  "data": {
+    "total_orders": integer,
+    "delivered": integer,
+    "conversion_rate_pct": float
+  },
+  "meta": { "generated_at": string }
 }
 ```
 
-#### 3. Get Top Sellers
+#### 3. Get Revenue
 ```
-GET /analytics/top-sellers
+GET /api/v1/revenue
 Query Parameters:
-  - start_date: string
-  - end_date: string
-  - limit: integer (default: 10)
+  - start_date: string (optional, YYYY-MM-DD)
+  - end_date: string (optional, YYYY-MM-DD)
 
 Response:
 {
-  "sellers": [
+  "data": {
+    "total_revenue": float
+  },
+  "meta": { "generated_at": string }
+}
+```
+
+#### 4. Get Top Sellers
+```
+GET /api/v1/top-sellers
+Query Parameters:
+  - start_date: string (optional, YYYY-MM-DD)
+  - end_date: string (optional, YYYY-MM-DD)
+  - limit: integer (default: 10, max: 50)
+
+Response:
+{
+  "data": [
     {
       "seller_id": string,
-      "seller_city": string,
-      "seller_state": string,
-      "total_revenue": float,
-      "order_count": integer,
-      "rank": integer
+      "total_orders": integer,
+      "total_revenue": float
     }
-  ]
+  ],
+  "meta": { "generated_at": string }
 }
 ```
 
-#### 4. Get Top Categories
+#### 5. Get Top Product Categories
 ```
-GET /analytics/top-categories
+GET /api/v1/top-products
 Query Parameters:
-  - start_date: string
-  - end_date: string
-  - limit: integer (default: 10)
+  - start_date: string (optional, YYYY-MM-DD)
+  - end_date: string (optional, YYYY-MM-DD)
+  - limit: integer (default: 10, max: 50)
 
 Response:
 {
-  "categories": [
+  "data": [
     {
-      "category_name": string,
-      "total_revenue": float,
-      "order_count": integer,
-      "rank": integer
+      "category": string,
+      "total_orders": integer,
+      "total_revenue": float
     }
-  ]
+  ],
+  "meta": { "generated_at": string }
 }
 ```
 
-#### 5. Get Payment Distribution
+#### 6. Get Payment Distribution
 ```
-GET /analytics/payment-distribution
+GET /api/v1/payment-distribution
 Query Parameters:
-  - start_date: string
-  - end_date: string
+  - start_date: string (optional, YYYY-MM-DD)
+  - end_date: string (optional, YYYY-MM-DD)
 
 Response:
 {
-  "payment_methods": [
+  "data": [
     {
       "payment_type": string,
-      "order_count": integer,
-      "revenue": float,
-      "percentage": float
+      "total_orders": integer,
+      "total_revenue": float
     }
-  ]
-}
-```
-
-#### 6. Get Top Products
-```
-GET /analytics/top-products
-Query Parameters:
-  - start_date: string
-  - end_date: string
-  - limit: integer (default: 10)
-
-Response:
-{
-  "products": [
-    {
-      "product_id": string,
-      "product_name": string,
-      "category": string,
-      "order_count": integer,
-      "revenue": float,
-      "rank": integer
-    }
-  ]
+  ],
+  "meta": { "generated_at": string }
 }
 ```
 
 #### 7. Health Check
 ```
-GET /analytics/health
+GET /health
 Response:
 {
-  "status": "healthy",
-  "database_connection": "ok",
-  "timestamp": "2026-06-17T10:30:00Z"
+  "status": "ok",
+  "message": "SmartCRM API is running"
 }
 ```
 
@@ -654,22 +668,27 @@ Group payments by order for multi-installment orders
 
 **Load Strategy:**
 ```
-1. Truncate existing tables (or use upsert logic)
-2. Load dimension tables first (Customers, Products, Sellers)
-3. Load fact tables (Orders, OrderItems)
-4. Load transactional tables (OrderPayments, OrderReviews)
-5. Validate referential integrity
-6. Create indexes on foreign keys
+1. Create tables from SQLAlchemy models when needed
+2. Check whether each table is empty
+3. Load dimension tables first (Sellers, Customers, Products)
+4. Load fact tables (Orders, OrderItems)
+5. Load transactional tables (OrderPayments, OrderReviews)
+6. Skip tables that already contain data
 ```
 
 ### ETL Execution
 
 #### Running ETL via Python
-```python
-from app.etl import load
+```bash
+cd backend
+python -m app.etl.load_with_schema
+```
 
-# Load all data with schema validation
-load.load_all_data(engine, validate_schema=True)
+To load a managed production database, provide `DATABASE_URL` explicitly:
+
+```bash
+cd backend
+DATABASE_URL='postgresql://user:password@host/database?sslmode=require' python -m app.etl.load_with_schema
 ```
 
 #### ETL Module Structure
@@ -820,26 +839,11 @@ Allows users to select date ranges for data filtering.
 
 Functions:
 ```javascript
-// Fetch dashboard summary metrics
-fetchDashboardSummary(startDate, endDate)
+// Fetch all dashboard core datasets in parallel
+fetchDashboardCore(filters)
 
-// Fetch sales funnel data
-fetchFunnel(startDate, endDate)
-
-// Fetch top sellers
-fetchTopSellers(startDate, endDate, limit)
-
-// Fetch top categories
-fetchTopCategories(startDate, endDate, limit)
-
-// Fetch payment distribution
-fetchPaymentDistribution(startDate, endDate)
-
-// Fetch top products
-fetchTopProducts(startDate, endDate, limit)
-
-// Health check
-healthCheck()
+// Fetch revenue for one date bucket
+fetchRevenueByRange(startDate, endDate)
 ```
 
 ---
@@ -850,8 +854,8 @@ healthCheck()
 
 - **Python 3.13+** (for backend)
 - **Node.js 18+** (for frontend)
-- **PostgreSQL 15** (for database)
-- **Docker & Docker Compose** (optional, for containerized setup)
+- **PostgreSQL 15** (for local database, optional if using Docker)
+- **Docker & Docker Compose** (recommended for local database/API setup)
 - **Git** (for version control)
 
 ### Local Setup (Without Docker)
@@ -883,17 +887,15 @@ cp .env.example .env
 **.env file:**
 ```
 DATABASE_URL=postgresql+psycopg://smartcrm_user:smartcrm_pass@localhost:5432/smartcrm_db
+BACKEND_CORS_ORIGINS=http://localhost:5173
 DEBUG=True
 ENVIRONMENT=development
 ```
 
 **Initialize database:**
 ```bash
-# Create database and tables
-python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)"
-
-# Load ETL data
-python -c "from app.etl import load; from app.database import engine; load.load_all_data(engine)"
+cd backend
+python -m app.etl.load_with_schema
 ```
 
 #### 3. Frontend Setup
@@ -907,7 +909,7 @@ npm install
 **Configure API endpoint:**
 Create `.env.local` file:
 ```
-VITE_API_URL=http://localhost:8000/api/v1
+VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
 #### 4. PostgreSQL Setup
@@ -951,8 +953,9 @@ Create `.env` file at project root:
 DB_USER=smartcrm_user
 DB_PASSWORD=smartcrm_pass
 DB_NAME=smartcrm_db
+BACKEND_CORS_ORIGINS=http://localhost:5173
 DEBUG=False
-ENVIRONMENT=production
+ENVIRONMENT=docker
 ```
 
 ---
@@ -996,13 +999,19 @@ npm run preview
 ### Running with Docker Compose
 
 ```bash
-docker-compose up
+docker compose up -d api
 ```
 
 **Services:**
 - API: http://localhost:8000
-- Frontend: http://localhost:3000
 - Database: localhost:5432
+
+The frontend is run separately with Vite:
+
+```bash
+cd frontend
+npm run dev
+```
 
 ### Stopping Services
 
@@ -1110,42 +1119,72 @@ Currently, frontend testing setup is not configured. Recommended:
 
 ## Deployment
 
-### Environment Variables for Production
+### Production Architecture
 
+The production deployment does not depend on Docker running on a local machine.
+
+```text
+Vercel frontend
+  -> VITE_API_BASE_URL=https://smartcrm-api-w95l.onrender.com/api/v1
+  -> Render FastAPI API
+  -> Neon PostgreSQL
 ```
-DATABASE_URL=postgresql+psycopg://user:pass@host:5432/db_name
+
+### Production Environment Variables
+
+**Render API:**
+
+```env
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+BACKEND_CORS_ORIGINS=https://smartcrm-lime.vercel.app
 DEBUG=False
 ENVIRONMENT=production
-CORS_ORIGINS=https://yourdomain.com
 ```
 
-### Docker Deployment
+The application accepts `postgresql://` and normalizes it to
+`postgresql+psycopg://` in `backend/app/config.py`.
 
-#### Build Images
+**Vercel Frontend:**
+
+```env
+VITE_API_BASE_URL=https://smartcrm-api-w95l.onrender.com/api/v1
+```
+
+### Render API Deployment
+
+The repository includes `render.yaml`, which defines the `smartcrm-api` web
+service.
+
+Recommended flow:
+
+1. Create a Neon PostgreSQL project.
+2. Load the CSV data into the same Neon connection string that Render will use:
+   ```bash
+   cd backend
+   DATABASE_URL='postgresql://user:password@host/database?sslmode=require' python -m app.etl.load_with_schema
+   ```
+3. Create a Render Blueprint from this repository.
+4. Set `DATABASE_URL` in Render using the Neon connection string.
+5. Deploy or restart the Render service.
+
+Validation:
 
 ```bash
-# Backend
-docker build -f backend/Dockerfile -t smartcrm-api:latest .
-
-# Frontend
-docker build -f frontend/Dockerfile -t smartcrm-frontend:latest .
+curl https://smartcrm-api-w95l.onrender.com/health
+curl https://smartcrm-api-w95l.onrender.com/api/v1/conversion-rate
+curl https://smartcrm-api-w95l.onrender.com/api/v1/revenue
 ```
 
-#### Deploy to Render/Vercel/AWS
+### Vercel Frontend Deployment
 
-**Backend (Render):**
-1. Connect GitHub repository
-2. Create new Web Service
-3. Select Docker runtime
-4. Set environment variables
-5. Deploy
-
-**Frontend (Vercel/Netlify):**
 1. Connect GitHub repository
 2. Set build command: `npm run build`
 3. Set output directory: `dist`
-4. Set environment variables
+4. Set `VITE_API_BASE_URL=https://smartcrm-api-w95l.onrender.com/api/v1`
 5. Deploy
+
+After changing `VITE_API_BASE_URL`, redeploy the frontend because Vite embeds
+`VITE_*` variables at build time.
 
 ### Database Backups
 
@@ -1171,14 +1210,16 @@ Error: could not connect to server: Connection refused
 - Verify PostgreSQL is running
 - Check DATABASE_URL environment variable
 - Ensure credentials are correct
+- In production, ensure Render uses the same Neon connection string that was
+  populated by the ETL loader
 
 #### 2. CORS Error
 ```
 Access to XMLHttpRequest blocked by CORS policy
 ```
 **Solution:**
-- Check `allow_origins` in `main.py`
-- Update frontend API_URL to match backend host
+- Check `BACKEND_CORS_ORIGINS`
+- Update `VITE_API_BASE_URL` to match the Render API host
 - Verify requests include correct headers
 
 #### 3. ETL Load Fails
@@ -1218,7 +1259,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 **Check API health:**
 ```bash
-curl http://localhost:8000/api/v1/analytics/health
+curl http://localhost:8000/health
 ```
 
 **Database health check:**
@@ -1278,6 +1319,7 @@ psql -h localhost -U smartcrm_user -d smartcrm_db -c "SELECT 1"
 
 ### Documentation Files
 - [README.md](README.md) - Project overview (Portuguese)
+- [docs/deploy-production.md](docs/deploy-production.md) - Production deployment guide
 - [pyproject.toml](pyproject.toml) - Python project configuration
 - [settings.json](settings.json) - Application settings
 
@@ -1300,8 +1342,9 @@ For issues, questions, or contributions:
 **Version History:**
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.1.1 | 2026-06-19 | Documented Neon, Render, and Vercel production deployment |
 | 0.1.0 | 2026-06-17 | Initial technical documentation |
 
 ---
 
-**Last Updated:** 2026-06-17  
+**Last Updated:** 2026-06-19  
