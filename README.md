@@ -101,8 +101,10 @@ O dashboard suporta modo escuro com cores e contrastes ajustados para leitura co
 - Python 3.13+
 - FastAPI
 - SQLAlchemy
-- PostgreSQL 15
-- Docker
+- PostgreSQL 15 local via Docker
+- Neon PostgreSQL em produção
+- Render para hospedagem da API
+- Vercel para hospedagem do frontend
 - Pytest
 - React 19
 - Vite
@@ -121,6 +123,7 @@ backend/tests/       # Testes dos endpoints
 frontend/src/        # Criação visual do CRM
 data/                # CSVs reais da base de dados
 docker-compose.yml   # PostgreSQL local
+render.yaml          # Blueprint da API no Render
 requirements.txt     # Dependências
 ```
 
@@ -132,7 +135,11 @@ requirements.txt     # Dependências
 cd backend && python -m pytest tests/ -v
 ```
 
-## 🐳 Docker: API, banco e carga de dados
+## 🐳 Docker local: API, banco e carga de dados
+
+O Docker é usado como ambiente local de desenvolvimento. Ele permite subir um
+PostgreSQL reproduzível, testar a API e carregar a base sem depender de serviços
+externos.
 
 Suba o PostgreSQL e carregue os CSVs pelo container `load-data`:
 
@@ -159,8 +166,31 @@ remova o volume `postgres_data` antes de rodar a carga novamente.
 
 ## 🚀 Produção sem Docker local
 
-Para manter o dashboard publicado funcionando com sua máquina desligada, use um
-PostgreSQL gerenciado e uma API FastAPI hospedada. Veja o guia:
+Em produção, o projeto não depende do Docker rodando na máquina local. A
+arquitetura publicada usa:
+
+```text
+Vercel frontend
+  -> VITE_API_BASE_URL=https://smartcrm-api-w95l.onrender.com/api/v1
+  -> Render FastAPI
+  -> Neon PostgreSQL
+```
+
+- **Vercel:** hospeda o dashboard React/Vite.
+- **Render:** hospeda a API FastAPI em `https://smartcrm-api-w95l.onrender.com`.
+- **Neon:** hospeda o PostgreSQL com os dados carregados a partir dos CSVs.
+- **Docker:** permanece útil para desenvolvimento local, mas não é necessário
+  para manter o dashboard online.
+
+Endpoints de validação:
+
+```bash
+curl https://smartcrm-api-w95l.onrender.com/health
+curl https://smartcrm-api-w95l.onrender.com/api/v1/revenue
+curl https://smartcrm-api-w95l.onrender.com/api/v1/conversion-rate
+```
+
+Para configurar ou reproduzir o deploy, veja o guia completo:
 [Deploy de produção](docs/deploy-production.md).
 
 ---
